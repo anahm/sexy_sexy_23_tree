@@ -149,6 +149,8 @@ vectore *add_to_vectore(my_type *elem, vectore *v, int index) {
   }
 
   res->storage[index] = elem;
+  if (index > res->last_used_index)
+    res->last_used_index = index;
 
   return res;
 }
