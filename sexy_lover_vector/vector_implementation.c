@@ -184,10 +184,13 @@ vectore *add_to_vectore(my_type *elem, vectore *v, int index) {
  ***************/
 
 int test_vectore(void) {
+  printf("beginning tests\n");
+  printf("testing initialization\n");
   vectore *v = new_vectore();
   assert(get_capacity(v) == 1);
   assert(get_last_used_index(v) == NO_INDEX_USED);
   
+  printf("testing get_from empty vectore\n");
   assert(get_from_vectore(v, 0) == NULL);
   assert(get_from_vectore(v, 1) == NULL);
 
@@ -199,6 +202,7 @@ int test_vectore(void) {
   y->x = 2;
   z->x = 3;
 
+  printf("testing add behavior\n");
   assert(add_to_vectore(x, v, 0) != NULL);
   assert(get_capacity(v) == 1);
   assert(get_last_used_index(v) == 0);
@@ -211,21 +215,29 @@ int test_vectore(void) {
   assert(get_capacity(v) == 4);
   assert(get_last_used_index(v) == 2);
 
+  printf("testing get_from proper usage\n");
   assert(get_from_vectore(v, 0) == x);
+  assert(get_from_vectore(v, 1) == y);
+  assert(get_from_vectore(v, 2) == z);
 
+  printf("testing clean_index proper usage\n");
   free(x);
   assert(clean_index(v, 0));
-
+  
+  printf("testing get_from some more\n");
   assert(get_from_vectore(v, 0) == NULL);
   assert(get_from_vectore(v, 1) == y);
   assert(get_from_vectore(v, 2) == z);
 
+  printf("cleaning up\n");
   free_vectore(v);
 
+  printf("tests passed!\n");
   return 1;
 }
 
 int main(void) {
   test_vectore();
 }
+
 
