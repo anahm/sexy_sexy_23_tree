@@ -125,6 +125,14 @@ int clean_index(vectore *v, int index) {
     return 0;
   } else {
     v->storage[index] = NULL;
+    
+    // make faster by having local copies of storage and last_used_index
+    // so that not dereferencing many times
+    if (index == v->last_used_index) {
+      while (v->storage[v->last_used_index] ==  NULL && v->last_used_index >= 0) {
+	v->last_used_index--;
+      }
+    }
   }
 }
 
