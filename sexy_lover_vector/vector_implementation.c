@@ -211,6 +211,15 @@ int test_vectore(void) {
   assert(get_capacity(v) == 4);
   assert(get_last_used_index(v) == 2);
 
+  assert(get_from_vectore(v, 0) == x);
+
+  free(x);
+  assert(clean_index(v, 0));
+
+  assert(get_from_vectore(v, 0) == NULL);
+  assert(get_from_vectore(v, 1) == y);
+  assert(get_from_vectore(v, 2) == z);
+
   free_vectore(v);
 
   return 1;
