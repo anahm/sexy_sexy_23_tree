@@ -46,6 +46,7 @@ vectore *resize_vectore(vectore *); // implemented
 
 // returns the my_type *stored at a certain index
 // does not remove the my_type
+// returns NULL if out of bounds; doesn't error out
 my_type *get_from_vectore(vectore *, int);
 
 // overwrites a location in the vectore with NULL
@@ -120,6 +121,15 @@ int clean_index(vectore *v, int index) {
     return 0;
   } else {
     v->storage[index] = NULL;
+  }
+}
+
+my_type *get_from_vectore(vectore *v, int index) {
+  if (index >= v->capacity) {
+    // out of bounds
+    return NULL;
+  } else {
+    return v->storage[index];
   }
 }
 
