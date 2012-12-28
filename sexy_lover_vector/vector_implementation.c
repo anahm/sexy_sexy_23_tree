@@ -52,6 +52,7 @@ my_type *get_from_vectore(vectore *, int);
 
 // overwrites a location in the vectore with NULL
 // returns 1 on success, 0 if out of bounds (still usable)
+// DOESN'T FREE WHAT WAS THERE!
 int clean_index(vectore *, int);
 
 // clean up and free vector
@@ -76,6 +77,9 @@ int test_vectore(void);
 vectore *new_vectore(void) {
   vectore *ret = malloc(sizeof(vectore));
   my_type **storage = malloc(sizeof(my_type *) * CAP_INIT);
+  assert(ret != NULL);
+  assert(storage != NULL);
+
   ret->storage = storage;
   ret->capacity = CAP_INIT;
   ret->last_used_index = NO_INDEX_USED;
@@ -105,6 +109,7 @@ vectore *resize_vectore(vectore *v) {
   // multiple dereferences of same data
   int old_cap = v->capacity;
   int new_cap = old_cap * 2;
+  int lui = v->last_used_index;
   my_type **storage = v->storage;
 
   // update capacity
@@ -113,9 +118,14 @@ vectore *resize_vectore(vectore *v) {
   vectore *ret = (vectore *) 
     realloc(v, new_cap * sizeof(my_type *));
   
+  ret->storage = storage;
+  ret->capacity = new_cap;
+  ret->last_used_index = lui;
+
   for (int i = old_cap; i < new_cap; i++) {
-    storage[i] = NULL;
+    ret->storage[i] = NULL;
   }
+
 
   return ret;
 }
@@ -159,8 +169,8 @@ vectore *add_to_vectore(my_type *elem, vectore *v, int index) {
   if (index < 0)
     return NULL;
   
-  vectore *res = NULL;
-  while (index >= v->capacity) {
+  vectore *res = v;
+  while (index >= res->capacity) {
     res = resize_vectore(v);
     if (res == NULL)
       return NULL;
@@ -179,8 +189,35 @@ vectore *add_to_vectore(my_type *elem, vectore *v, int index) {
 
 int test_vectore(void) {
   vectore *v = new_vectore();
-  assert(get_capacity(v) == CAP_INIT);
+  assert(get_capacity(v) == 1);
   assert(get_last_used_index(v) == NO_INDEX_USED);
+  
+  assert(get_from_vectore(v, 0) == NULL);
+  assert(get_from_vectore(v, 1) == NULL);
+
+  my_type *x = malloc(sizeof(my_type));
+  my_type *y = malloc(sizeof(my_type));
+  my_type *z = malloc(sizeof(my_type));
+
+  x->x = 1;
+  y->x = 2;
+  z->x = 3;
+
+  assert(add_to_vectore(x, v, 0) != NULL);
+  assert(get_capacity(v) == 1);
+  assert(get_last_used_index(v) == 0);
+
+  assert(add_to_vectore(z, v, 2) != NULL);
+  assert(get_capacity(v) == 4);
+  assert(get_last_used_index(v) == 2);
+  
+  assert(add_to_vectore(y, v, 1) != NULL);
+  assert(get_capacity(v) == 4);
+  assert(get_last_used_index(v) == 2);
+
+  free_vectore(v);
+
+  return 1;
 }
 
 int main(void) {
