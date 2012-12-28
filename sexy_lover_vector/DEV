@@ -4,6 +4,7 @@ GENERAL NOTES
 
 > designed to work on structs; assumes the structs are malloc'ed by the user; free'ing taken care of by free_vectore
 
+> get_last_used_index not currently used in code; more intended to be used by client so as not to waste time searching for data when couldn't be there
 
 DESIGN DECISIONS
 

@@ -33,7 +33,7 @@ typedef struct vectore {
 
 // instantiate and initialize a new vectore
 // returns pointer to new vectore on success, NULL on failure
-vectore *new_vectore(void); // implemented
+vectore *new_vectore(void);
 
 // add a my_type *to a vectore at a specific location
 // returns the new vectore on success, NULL on failure
@@ -42,23 +42,27 @@ vectore *add_to_vectore(my_type *, vectore *, int);
 
 // resizes the vectore (increases capacity by factor of 2)
 // returns pointer to new vectore on success, NULL on failure
-vectore *resize_vectore(vectore *); // implemented
+vectore *resize_vectore(vectore *);
 
 // returns the my_type *stored at a certain index
 // does not remove the my_type
 // returns NULL if out of bounds; doesn't error out
-my_type *get_from_vectore(vectore *, int); // implemented
+my_type *get_from_vectore(vectore *, int);
 
 // overwrites a location in the vectore with NULL
 // returns 1 on success, 0 if out of bounds (still usable)
-int clean_index(vectore *, int); // implemented
+int clean_index(vectore *, int);
 
 // clean up and free vector
 // returns 1 on success, 0 on failure
-int free_vectore(vectore *); // implemented
+int free_vectore(vectore *);
 
-int get_capacity(vectore *); // implemented
-int get_last_used_index(vectore *); // implemented
+// get capacity of vector
+// probably not necessary but good OO design
+int get_capacity(vectore *);
+
+// get last used index in vectore
+int get_last_used_index(vectore *);
 
 /******************
  * IMPLEMENTATION *
