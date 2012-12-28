@@ -17,3 +17,7 @@ PROBLEMS/TODO
 
 > no way to downscale vector
   > wasteful if had lots of high-index values but don't anymore
+
+> wanted a self-resizing vectore class; add uses realloc, meaning add has to return a pointer to the new vectore; returns NULL in a variety of error conditions
+  > should clarify why failed (possibly using perror?)
+

@@ -36,9 +36,9 @@ typedef struct vectore {
 vectore *new_vectore(void); // implemented
 
 // add a my_type *to a vectore at a specific location
-// returns 1 on success, 0 on failure
+// returns the new vectore on success, NULL on failure
 // automatically handles resizing vectore if needed
-int add_to_vectore(my_type *, vectore *, int);
+vectore *add_to_vectore(my_type *, vectore *, int);
 
 // resizes the vectore (increases capacity by factor of 2)
 // returns pointer to new vectore on success, NULL on failure
@@ -47,7 +47,7 @@ vectore *resize_vectore(vectore *); // implemented
 // returns the my_type *stored at a certain index
 // does not remove the my_type
 // returns NULL if out of bounds; doesn't error out
-my_type *get_from_vectore(vectore *, int);
+my_type *get_from_vectore(vectore *, int); // implemented
 
 // overwrites a location in the vectore with NULL
 // returns 1 on success, 0 if out of bounds (still usable)
@@ -117,7 +117,7 @@ int free_vectore(vectore *v) {
 }
 
 int clean_index(vectore *v, int index) {
-  if (index >= v->capacity) {
+  if (index >= v->capacity || index < 0) {
     return 0;
   } else {
     v->storage[index] = NULL;
@@ -125,12 +125,28 @@ int clean_index(vectore *v, int index) {
 }
 
 my_type *get_from_vectore(vectore *v, int index) {
-  if (index >= v->capacity) {
+  if (index >= v->capacity || index < 0) {
     // out of bounds
     return NULL;
   } else {
     return v->storage[index];
   }
+}
+
+vectore *add_to_vectore(my_type *elem, vectore *v, int index) {
+  if (index < 0)
+    return NULL;
+  
+  vectore *res = NULL;
+  while (index >= v->capacity) {
+    res = resize_vectore(v);
+    if (res == NULL)
+      return NULL;
+  }
+
+  res->storage[index] = elem;
+
+  return res;
 }
 
 /***************
