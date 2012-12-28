@@ -109,25 +109,19 @@ vectore *resize_vectore(vectore *v) {
   // multiple dereferences of same data
   int old_cap = v->capacity;
   int new_cap = old_cap * 2;
-  int lui = v->last_used_index;
   my_type **storage = v->storage;
 
   // update capacity
   v->capacity = new_cap;
 
-  vectore *ret = (vectore *) 
-    realloc(v, new_cap * sizeof(my_type *));
-  
-  ret->storage = storage;
-  ret->capacity = new_cap;
-  ret->last_used_index = lui;
+  my_type **new_storage = (my_type **) realloc(v, new_cap * sizeof(my_type *));
+  v->storage = new_storage;
 
   for (int i = old_cap; i < new_cap; i++) {
-    ret->storage[i] = NULL;
+    v->storage[i] = NULL;
   }
 
-
-  return ret;
+  return v;
 }
 
 int free_vectore(vectore *v) {
