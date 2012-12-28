@@ -114,7 +114,7 @@ vectore *resize_vectore(vectore *v) {
   // update capacity
   v->capacity = new_cap;
 
-  my_type **new_storage = (my_type **) realloc(v, new_cap * sizeof(my_type *));
+  my_type **new_storage = (my_type **) realloc(storage, new_cap * sizeof(my_type *));
   v->storage = new_storage;
 
   for (int i = old_cap; i < new_cap; i++) {
