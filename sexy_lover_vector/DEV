@@ -1,5 +1,17 @@
 DEV NOTES FOR SEXY_LOVER_VECTOR(E)
 
+GENERAL NOTES 
+
+> designed to work on structs; assumes the structs are malloc'ed by the user; free'ing taken care of by free_vectore
+
+
+DESIGN DECISIONS
+
+> container has an array of my_type *'s instead of my_type's
+
+
+PROBLEMS/TODO
+
 > resize only upscales by factor of 2
   > wasteful if have, for instance, only 1 really high index
 
