@@ -1,0 +1,7 @@
+DEV NOTES FOR SEXY_LOVER_VECTOR(E)
+
+> resize only upscales by factor of 2
+  > wasteful if have, for instance, only 1 really high index
+
+> no way to downscale vector
+  > wasteful if had lots of high-index values but don't anymore
