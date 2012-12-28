@@ -131,6 +131,8 @@ int free_vectore(vectore *v) {
     free(storage[i]);
   }
 
+  free(v);
+
   return 1;
 }
 
