@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <assert.h>
 
 #define CAP_INIT 1
 #define NO_INDEX_USED -1
@@ -64,6 +65,11 @@ int get_capacity(vectore *);
 // get last used index in vectore
 int get_last_used_index(vectore *);
 
+// test the vectore code
+int test_vectore(void);
+
+
+
 /******************
  * IMPLEMENTATION *
  ******************/
@@ -73,6 +79,10 @@ vectore *new_vectore(void) {
   ret->storage = storage;
   ret->capacity = CAP_INIT;
   ret->last_used_index = NO_INDEX_USED;
+
+  for (int i = 0; i < CAP_INIT; i++) {
+    ret->storage[i] = NULL;
+  }
 
   return ret;
 }
@@ -166,10 +176,14 @@ vectore *add_to_vectore(my_type *elem, vectore *v, int index) {
 /***************
  * TEST SCRIPT *
  ***************/
-// currently does nothing
-int main(void) {
-  my_type x;
-  vectore y;
-  (void) x;
-  (void) y;
+
+int test_vectore(void) {
+  vectore *v = new_vectore();
+  assert(get_capacity(v) == CAP_INIT);
+  assert(get_last_used_index(v) == NO_INDEX_USED);
 }
+
+int main(void) {
+  test_vectore();
+}
+
