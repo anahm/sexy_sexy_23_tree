@@ -1,0 +1,4 @@
+NOTES TO DEVELOPERS USING RBT_implementation:
+
+> currently only supports insert, remove, and search
+  > need to update so that supports in-order traversal and the like
