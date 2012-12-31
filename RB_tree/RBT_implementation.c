@@ -1,11 +1,11 @@
-/***********************************************
- * Implementation of a red-black tree          *
- * Neil Sant Gat                               *
- * Begun Sunday, December 30th, 2012           *
- * thanks to Wikipedia for a great             *
- * description of RB tree semantics            *
- * http://en.wikipedia.org/wiki/Red_Black_tree *
- ***********************************************/
+/***************************************************
+ * Implementation of a red-black tree              *
+ * Neil Sant Gat                                   *
+ * Begun Sunday, December 30th, 2012               *
+ * thanks to Wikipedia for a great                 *
+ * description of RB tree semantics and operations *
+ * http://en.wikipedia.org/wiki/Red_Black_tree     *
+ ***************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +15,9 @@
 #define BRANCH 0xFEEDBEEF
 #define RED 0xDEAFBEEF
 #define BLACK 0xACEDBEEF
+#define LESS -1
+#define EQUAL 0
+#define GREATER 1
 
 /****************
  * USER-DEFINED *
@@ -26,14 +29,14 @@ typedef struct my_type {
 } my_type;
 
 // comparison function over my_types
-// returns -1 iff "a < b", 0 iff "a == b", 1 iff "a > b"
+// returns LESS iff "a < b", 0 iff "a == b", 1 iff "a > b"
 int int_compare(my_type *a, my_type *b) {
   if (a->x < b->x)
-    return -1;
+    return LESS;
   else if (a->x > b->x)
-    return 1;
+    return GREATER;
   else
-    return 0;
+    return EQUAL;
 }
 
 /*************
@@ -52,7 +55,7 @@ typedef struct sexy_rb_tree {
   rb_node *root;
   int num_nodes;
 
-  // returns -1 iff "a < b", 0 iff "a == b", 1 iff "a > b"
+  // returns LESS iff "a < b", EQUAL iff "a == b", GREATER iff "a > b"
   int (*comp)(my_type *, my_type *);
 } sexy_rb_tree;
 
@@ -62,15 +65,22 @@ sexy_rb_tree *create_rb(int (*)(my_type *, my_type *));
 int insert_baby(my_type *, sexy_rb_tree *);
 int remove_baby(my_type *, sexy_rb_tree *);
 int search_baby(my_type *, sexy_rb_tree *);
-int free_rb(sexy_rb_tree *);
+void free_rb(sexy_rb_tree *);
 
 // returns 1 if red, 0 if black
 int is_red(rb_node *);
 
 // helper functions: DO NOT EXPOSE
-static int grand_parent(rb_node *);
-static int uncle(rb_node *);
-static int free_rb_nodes(rb_node *n);
+static rb_node *grand_parent(rb_node *);
+static rb_node *uncle(rb_node *);
+static void free_rb_nodes(rb_node *);
+
+// returns 1 on success
+static int insert_root(rb_node *, sexy_rb_tree *);
+
+// insert node without fixing tree
+// returns the node after insertion into the tree
+static rb_node *node_insert_node(rb_node *, rb_node *, int (*)(my_type *, my_type *));
 
 /******************
  * IMPLEMENTATION *
@@ -86,7 +96,7 @@ sexy_rb_tree *create_rb(int (*comp)(my_type *, my_type *)) {
   ret->comp = comp;
 }
 
-static int free_rb_nodes(rb_node *n) {
+static void free_rb_nodes(rb_node *n) {
   free(n->data);
   if (n->left != NULL)
     free_rb_nodes(n->left);
@@ -95,8 +105,8 @@ static int free_rb_nodes(rb_node *n) {
   free(n);
 }
 
-int free_rb(sexy_rb_tree *t) {
-  return free_rb_nodes(t->root);
+void free_rb(sexy_rb_tree *t) {
+  free_rb_nodes(t->root);
 }
 
 int is_red(rb_node *n) {
@@ -108,6 +118,100 @@ int is_red(rb_node *n) {
     assert(0);
 }
 
+static rb_node *grand_parent(rb_node *n) {
+  if (n != NULL && n->parent != NULL)
+    return n->parent->parent;
+  else
+    return NULL;
+}
+
+static rb_node *uncle(rb_node *n) {
+  rb_node *g = grand_parent(n);
+  if (g == NULL) {
+    // no grand parent, so no uncle
+    return NULL;
+  } else {
+    // return the child of g that isn't the parent of n
+    if (g->left == n->parent)
+      return g->right;
+    else
+      return g->left;
+  }
+}
+
+// PREVIOUS CODE FOR node_insert_node()
+  /*rb_node *cur = t->root;
+  
+  // tree is empty
+  if (cur == NULL) {
+    cur->node_type = BRANCH;
+    cur->node_color = BLACK;
+    cur->parent = NULL;
+    cur->left = NULL;
+    cur->right = NULL;
+    t->root = cur;
+    t->num_nodes++;
+  }
+  
+  // traverse to proper location in tree using
+  // passed in comparator function
+  if (
+  */
+
+// assumes both inserting and cur are not NULL and that
+// inserting has already been colored red
+static rb_node *node_insert_node(rb_node *inserting, rb_node *cur, int (*comp)(my_type *, my_type *)) {
+  rb_node *next = NULL;
+
+  if (comp(inserting->data, cur->data) == LESS) {
+    // go left
+    next = cur->left;
+
+    if (next == NULL) {
+      // base case
+      inserting->left = NULL;
+      inserting->right = NULL;
+      inserting->parent = cur;
+      inserting->node_type = BRANCH;
+      cur->left = inserting;
+      return inserting;
+    } else {
+      // recursive case
+      return node_insert_node(inserting, next, comp);
+    }
+
+  } else if (comp(inserting->data, cur->data) == EQUAL) {
+    // exit because DON'T ALLOW DUPLICATES
+    assert(0);
+  } else if (comp(inserting->data, cur->data) == GREATER) {
+    // go right
+    next = cur->right;
+
+    if (next == NULL) {
+      // base case
+      inserting->left = NULL;
+      inserting->right = NULL;
+      inserting->parent = cur;
+      inserting->node_type = BRANCH;
+      cur->right = inserting;
+      return inserting;
+    } else {
+      // recursive case
+      return node_insert_node(inserting, next, comp);
+    }
+
+  } else {
+      // something wrong with constants
+      assert(0);
+
+  }
+
+}
+
+// returns 1 on success
+int insert_root(rb_node *n, sexy_rb_tree *t) {
+  
+}
 
 /***************
  * TEST SCRIPT *
