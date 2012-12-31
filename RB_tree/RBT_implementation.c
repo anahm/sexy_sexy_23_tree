@@ -82,6 +82,8 @@ static int insert_root(rb_node *, sexy_rb_tree *);
 // returns the node after insertion into the tree
 static rb_node *node_insert_node(rb_node *, rb_node *, int (*)(my_type *, my_type *));
 
+static rb_node *binary_insert_node(rb_node *, sexy_rb_tree *, int (*)(my_type *, my_type *));
+
 /******************
  * IMPLEMENTATION *
  ******************/
@@ -107,6 +109,7 @@ static void free_rb_nodes(rb_node *n) {
 
 void free_rb(sexy_rb_tree *t) {
   free_rb_nodes(t->root);
+  free(t);
 }
 
 int is_red(rb_node *n) {
@@ -208,6 +211,22 @@ static rb_node *node_insert_node(rb_node *inserting, rb_node *cur, int (*comp)(m
 
 }
 
+static rb_node *binary_insert_node(rb_node *n, sexy_rb_tree *t, int (*comp)(my_type *, my_type *)) {
+
+  if (t->root == NULL) {
+    n->node_type = BRANCH;
+    n->node_color = BLACK;
+    n->parent = NULL;
+    n->left = NULL;
+    n->right = NULL;
+    t->root = n;
+  } else {
+    n->node_color = RED;
+    node_insert_node(n, t->root, comp);
+  }
+
+}
+
 // returns 1 on success
 int insert_root(rb_node *n, sexy_rb_tree *t) {
   
@@ -217,7 +236,32 @@ int insert_root(rb_node *n, sexy_rb_tree *t) {
  * TEST SCRIPT *
  ***************/
 
-// currently does nothing
+void test_1(void) {
+  sexy_rb_tree *t = create_rb(&int_compare);
+  
+  my_type *x = (my_type *) malloc(sizeof(my_type));
+  my_type *y = (my_type *) malloc(sizeof(my_type));
+  my_type *z = (my_type *) malloc(sizeof(my_type));
+
+  x->x = 1;
+  y->x = 2;
+  z->x = 3;
+
+  rb_node *a = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *b = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *c = (rb_node *) malloc(sizeof(rb_node));
+
+  a->data = x;
+  b->data = y;
+  c->data = z;
+
+  assert(binary_insert_node(b, t, int_compare) != NULL);
+  assert(binary_insert_node(a, t, int_compare) != NULL);
+  assert(binary_insert_node(c, t, int_compare) != NULL);
+
+  free_rb(t);
+}
+
 int main(void) {
-  return 1;
+  test_1();
 }
