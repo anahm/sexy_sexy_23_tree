@@ -1,1 +1,1 @@
-gcc -std=c99 -ggdb3 RBT_implementation.c
+gcc -std=c99 -ggdb3 -Werror RBT_implementation.c
