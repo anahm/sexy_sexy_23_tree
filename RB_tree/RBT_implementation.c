@@ -65,7 +65,7 @@ int search_baby(my_type *, sexy_rb_tree *);
 int free_rb(sexy_rb_tree *);
 
 // returns 1 if red, 0 if black
-int rb_color(rb_node *);
+int is_red(rb_node *);
 
 // helper functions: DO NOT EXPOSE
 static int grand_parent(rb_node *);
@@ -99,7 +99,7 @@ int free_rb(sexy_rb_tree *t) {
   return free_rb_nodes(t->root);
 }
 
-int rb_color(rb_node *n) {
+int is_red(rb_node *n) {
   if (n->node_color == RED)
     return 1;
   else if (n->node_color == BLACK)
@@ -107,6 +107,8 @@ int rb_color(rb_node *n) {
   else
     assert(0);
 }
+
+
 /***************
  * TEST SCRIPT *
  ***************/
