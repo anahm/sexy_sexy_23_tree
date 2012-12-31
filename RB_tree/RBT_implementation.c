@@ -349,10 +349,125 @@ void test_3(void) {
 
 }
 
+void test_4(void) {
+  // b, c, a ordering
+  sexy_rb_tree *t = create_rb(&int_compare);
+  
+  my_type *x = (my_type *) malloc(sizeof(my_type));
+  my_type *y = (my_type *) malloc(sizeof(my_type));
+  my_type *z = (my_type *) malloc(sizeof(my_type));
+
+  x->x = 1;
+  y->x = 2;
+  z->x = 3;
+
+  rb_node *a = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *b = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *c = (rb_node *) malloc(sizeof(rb_node));
+
+  a->data = x;
+  b->data = y;
+  c->data = z;
+
+  assert(binary_insert_node(b, t, int_compare) != NULL);
+  assert(binary_insert_node(c, t, int_compare) != NULL);
+  assert(binary_insert_node(a, t, int_compare) != NULL);
+
+  assert(t->root == b);
+  assert(t->root->left == a);
+  assert(t->root->right == c);
+  assert(t->root->left->left == NULL);
+  assert(t->root->left->right == NULL);
+  assert(t->root->right->left == NULL);
+  assert(t->root->right->right == NULL);
+
+  free_rb(t);
+
+}
+
+
+void test_5(void) {
+  // c, a, b ordering
+  sexy_rb_tree *t = create_rb(&int_compare);
+  
+  my_type *x = (my_type *) malloc(sizeof(my_type));
+  my_type *y = (my_type *) malloc(sizeof(my_type));
+  my_type *z = (my_type *) malloc(sizeof(my_type));
+
+  x->x = 1;
+  y->x = 2;
+  z->x = 3;
+
+  rb_node *a = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *b = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *c = (rb_node *) malloc(sizeof(rb_node));
+
+  a->data = x;
+  b->data = y;
+  c->data = z;
+
+  assert(binary_insert_node(c, t, int_compare) != NULL);
+  assert(binary_insert_node(a, t, int_compare) != NULL);
+  assert(binary_insert_node(b, t, int_compare) != NULL);
+
+  assert(t->root == c);
+  assert(t->root->left == a);
+  assert(t->root->right == NULL);
+  assert(t->root->left->left == NULL);
+  assert(t->root->left->right == b);
+  assert(t->root->left->right->left == NULL);
+  assert(t->root->left->right->right == NULL);
+
+  free_rb(t);
+
+}
+
+void test_6(void) {
+  // c, b, a ordering
+  sexy_rb_tree *t = create_rb(&int_compare);
+  
+  my_type *x = (my_type *) malloc(sizeof(my_type));
+  my_type *y = (my_type *) malloc(sizeof(my_type));
+  my_type *z = (my_type *) malloc(sizeof(my_type));
+
+  x->x = 1;
+  y->x = 2;
+  z->x = 3;
+
+  rb_node *a = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *b = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *c = (rb_node *) malloc(sizeof(rb_node));
+
+  a->data = x;
+  b->data = y;
+  c->data = z;
+
+  assert(binary_insert_node(c, t, int_compare) != NULL);
+  assert(binary_insert_node(b, t, int_compare) != NULL);
+  assert(binary_insert_node(a, t, int_compare) != NULL);
+
+  assert(t->root == c);
+  assert(t->root->left == b);
+  assert(t->root->right == NULL);
+  assert(t->root->left->left == a);
+  assert(t->root->left->right == NULL);
+  assert(t->root->left->left->left == NULL);
+  assert(t->root->left->left->right == NULL);
+
+  free_rb(t);
+
+}
+
+
 void test_binary_insert(void) {
+  printf("beginning test of binary_insert_node()\n");
   test_1();
   test_2();
   test_3();
+  test_4();
+  test_5();
+  test_6();
+  printf("binary_insert_node() passed!\n");
 }
 
 int main(void) {
