@@ -67,13 +67,34 @@ int free_rb(sexy_rb_tree *);
 // helper functions: DO NOT EXPOSE
 static int grand_parent(rb_node *);
 static int uncle(rb_node *);
-
+static int free_rb_nodes(rb_node *n);
 
 /******************
  * IMPLEMENTATION *
  ******************/
 
+sexy_rb_tree *create_rb(int (*comp)(my_type *, my_type *)) {
+  sexy_rb_tree *ret = (sexy_rb_tree *) malloc(sizeof(sexy_rb_tree));
+  if (ret == NULL)
+    return NULL;
+  
+  ret->root = NULL;
+  ret->num_nodes = 0;
+  ret->comp = comp;
+}
 
+static int free_rb_nodes(rb_node *n) {
+  free(n->data);
+  if (n->left != NULL)
+    free_rb_nodes(n->left);
+  if (n->right != NULL)
+    free_rb_nodes(n->right);
+  free(n);
+}
+
+int free_rb(sexy_rb_tree *t) {
+  return free_rb_nodes(t->root);
+}
 /***************
  * TEST SCRIPT *
  ***************/
