@@ -236,7 +236,85 @@ int insert_root(rb_node *n, sexy_rb_tree *t) {
  * TEST SCRIPT *
  ***************/
 
+// BREAKS ABSTRACTION BARRIER
+// primarily tests binary_insert_node
 void test_1(void) {
+  // a, b, c ordering
+  sexy_rb_tree *t = create_rb(&int_compare);
+  
+  my_type *x = (my_type *) malloc(sizeof(my_type));
+  my_type *y = (my_type *) malloc(sizeof(my_type));
+  my_type *z = (my_type *) malloc(sizeof(my_type));
+
+  x->x = 1;
+  y->x = 2;
+  z->x = 3;
+
+  rb_node *a = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *b = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *c = (rb_node *) malloc(sizeof(rb_node));
+
+  a->data = x;
+  b->data = y;
+  c->data = z;
+
+  // assert basic inserts don't fail
+  assert(binary_insert_node(a, t, int_compare) != NULL);
+  assert(binary_insert_node(b, t, int_compare) != NULL);
+  assert(binary_insert_node(c, t, int_compare) != NULL);
+
+  // assert structure is as it should be
+  assert(t->root == a);
+  assert(t->root->left == NULL);
+  assert(t->root->right == b);
+  assert(t->root->right->right == c);
+  assert(t->root->right->left == NULL);
+  assert(t->root->right->right->left == NULL);
+  assert(t->root->right->right->right == NULL);
+
+  free_rb(t);
+
+}
+
+void test_2(void) {
+  // a, c, b ordering
+  sexy_rb_tree *t = create_rb(&int_compare);
+  
+  my_type *x = (my_type *) malloc(sizeof(my_type));
+  my_type *y = (my_type *) malloc(sizeof(my_type));
+  my_type *z = (my_type *) malloc(sizeof(my_type));
+
+  x->x = 1;
+  y->x = 2;
+  z->x = 3;
+
+  rb_node *a = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *b = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *c = (rb_node *) malloc(sizeof(rb_node));
+
+  a->data = x;
+  b->data = y;
+  c->data = z;
+
+  // assert basic inserts don't fail
+  assert(binary_insert_node(a, t, int_compare) != NULL);
+  assert(binary_insert_node(c, t, int_compare) != NULL);
+  assert(binary_insert_node(b, t, int_compare) != NULL);
+
+  // assert structure is as it should be
+  assert(t->root == a);
+  assert(t->root->left == NULL);
+  assert(t->root->right == c);
+  assert(t->root->right->right == NULL);
+  assert(t->root->right->left == b);
+  assert(t->root->right->left->left == NULL);
+  assert(t->root->right->left->right == NULL);
+
+  free_rb(t);
+}
+
+void test_3(void) {
+  // b, a, c ordering
   sexy_rb_tree *t = create_rb(&int_compare);
   
   my_type *x = (my_type *) malloc(sizeof(my_type));
@@ -259,9 +337,24 @@ void test_1(void) {
   assert(binary_insert_node(a, t, int_compare) != NULL);
   assert(binary_insert_node(c, t, int_compare) != NULL);
 
+  assert(t->root == b);
+  assert(t->root->left == a);
+  assert(t->root->right == c);
+  assert(t->root->left->left == NULL);
+  assert(t->root->left->right == NULL);
+  assert(t->root->right->left == NULL);
+  assert(t->root->right->right == NULL);
+
   free_rb(t);
+
+}
+
+void test_binary_insert(void) {
+  test_1();
+  test_2();
+  test_3();
 }
 
 int main(void) {
-  test_1();
+  test_binary_insert();
 }
