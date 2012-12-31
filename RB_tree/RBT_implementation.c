@@ -13,6 +13,8 @@
 
 #define LEAF 0xDEADBEEF
 #define BRANCH 0xFEEDBEEF
+#define RED 0xDEAFBEEF
+#define BLACK 0xACEDBEEF
 
 /****************
  * USER-DEFINED *
@@ -40,6 +42,7 @@ int int_compare(my_type *a, my_type *b) {
 typedef struct rb_node {
   my_type *data;
   int node_type;
+  int node_color;
   struct rb_node *parent;
   struct rb_node *left;
   struct rb_node *right;
@@ -62,6 +65,14 @@ int search_baby(my_type *, sexy_rb_tree *);
 int free_rb(sexy_rb_tree *);
 
 // helper functions: DO NOT EXPOSE
+static int grand_parent(rb_node *);
+static int uncle(rb_node *);
+
+
+/******************
+ * IMPLEMENTATION *
+ ******************/
+
 
 /***************
  * TEST SCRIPT *
