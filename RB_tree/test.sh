@@ -1,3 +1,3 @@
 rm a.out
 ./compile.sh
-valgrind ./a.out
+valgrind --leak-check=full ./a.out
