@@ -72,12 +72,16 @@ rb_node *get_root(sexy_rb_tree *);
 int is_red(rb_node *);
 
 // helper functions: DO NOT EXPOSE
+static void free_rb_nodes(rb_node *);
+static int insert_rb_node(rb_node *, sexy_rb_tree *);
+
+
+// traversing functions
 static rb_node *grand_parent(rb_node *);
 static rb_node *uncle(rb_node *);
 static rb_node *parent(rb_node *);
 static rb_node *get_left(rb_node *);
 static rb_node *get_right(rb_node *);
-static void free_rb_nodes(rb_node *);
 
 // left and right rotate for trees
 static int lrot(rb_node *);
@@ -94,7 +98,9 @@ static int insert_black_parent(rb_node *, sexy_rb_tree *);
 static int insert_both_red(rb_node *, sexy_rb_tree *);
 
 // parent red, uncle black
-static int insert_pred_ublack(rb_node *, sexy_rb_tree *);
+static int insert_pred_ublack_opp(rb_node *, sexy_rb_tree *);
+
+static int insert_pred_ublack_same(rb_node *, sexy_rb_tree *);
 
 // insert node without fixing tree
 // returns the node after insertion into the tree
@@ -173,24 +179,13 @@ static rb_node *uncle(rb_node *n) {
   }
 }
 
-// PREVIOUS CODE FOR node_insert_node()
-  /*rb_node *cur = t->root;
-  
-  // tree is empty
-  if (cur == NULL) {
-    cur->node_type = BRANCH;
-    cur->node_color = BLACK;
-    cur->parent = NULL;
-    cur->left = NULL;
-    cur->right = NULL;
-    t->root = cur;
-    t->num_nodes++;
-  }
-  
-  // traverse to proper location in tree using
-  // passed in comparator function
-  if (
-  */
+static rb_node *get_right(rb_node *n) {
+  return n->right;
+}
+
+static rb_node *get_left(rb_node *n) {
+  return n->left;
+}
 
 // assumes both inserting and cur are not NULL and that
 // inserting has already been colored red
@@ -293,17 +288,54 @@ static int insert_both_red(rb_node *n, sexy_rb_tree *t) {
     // in case we just made the root red
     return insert_base(g, t);
   } else {
-    return insert_pred_ublack(n, t);
+    return insert_pred_ublack_opp(n, t);
   }
 }
 
-static rb_node *get_right(rb_node *n) {
-  return n->right;
+// parent red, uncle black, parent and child "opposites"
+// i.e. if parent is left of grandparent, child is
+// right of parent, etc.
+static int insert_pred_ublack_opp(rb_node *n, sexy_rb_tree *t) {
+  rb_node *p = parent(n);
+  assert(p != NULL);
+  rb_node *g = grand_parent(n);
+  assert(g != NULL);
+  
+
+  int res = 0;
+  if (get_right(p) == n && p == get_left(g)) {
+    res = lrot(p);
+    if (res == 0)
+      return 0;
+    n = n->left;
+  } else if (get_left(p) == n && p == get_right(g)) {
+    res = rrot(p);
+    n = n->right;
+  }
+
+  return insert_pred_ublack_same(n, t);
 }
 
-static rb_node *get_left(rb_node *n) {
-  return n->left;
+static int insert_pred_ublack_same(rb_node *n, sexy_rb_tree *t) {
+  rb_node *p = parent(n);
+  assert(p != NULL);
+  rb_node *g = grand_parent(n);
+  assert(g != NULL);
+
+  // p and g about to switch, so need to fix colors
+  set_color(p, BLACK);
+  set_color(g, RED);
+
+  int res = 0;
+  // do the actual switch
+  if (get_left(p) == n)
+    res = rrot(g);
+  else
+    res = lrot(g);
+
+  return res;
 }
+
 
 static int rrot(rb_node *n) {
   rb_node *top = n; // c
@@ -369,9 +401,11 @@ static int lrot(rb_node *n) {
   return 1;
 }
 
-static int insert_pred_ublack(rb_node *n, sexy_rb_tree *t) {
-  return 1;
+static int insert_rb_node(rb_node *n, sexy_rb_tree *t) {
+  rb_node *inserting = binary_insert_node(n, t, t->comp);
+  return insert_base(inserting, t);
 }
+
 
 /***************
  * TEST SCRIPT *
@@ -821,6 +855,7 @@ static void test_rrot(void) {
   test_rrot2();
 }
 
+// reverse of rrot1
 static void test_lrot1(void) {
   // instantiate and initialize data
   my_type *a = malloc(sizeof(my_type));

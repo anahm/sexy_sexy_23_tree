@@ -1,5 +1,8 @@
 NOTES TO DEVELOPERS USING RBT_implementation:
 
+> currently passing in comparator function in more placed than needed
+  > in binary_insert_node(), passing in comparator with tree, but the comparator should already be in the tree; fix this
+
 > currently only supports insert, remove, and search
   > need to update so that supports in-order traversal and the like
 
