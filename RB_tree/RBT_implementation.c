@@ -11,10 +11,10 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define LEAF 0xDEADBEEF
-#define BRANCH 0xFEEDBEEF
-#define RED 0xDEAFBEEF
-#define BLACK 0xACEDBEEF
+#define LEAF 11
+#define BRANCH 12
+#define RED 13
+#define BLACK 14
 #define LESS -1
 #define EQUAL 0
 #define GREATER 1
@@ -246,6 +246,8 @@ static rb_node *binary_insert_node(rb_node *n, sexy_rb_tree *t, int (*comp)(my_t
     n->left = NULL;
     n->right = NULL;
     t->root = n;
+
+    return n;
   } else {
     n->node_color = RED;
     node_insert_node(n, t->root, comp);
@@ -267,7 +269,10 @@ static int insert_base(rb_node *n, sexy_rb_tree *t) {
 }
 
 static int insert_black_parent(rb_node *n, sexy_rb_tree *t) {
-  if (!is_red(parent(n)))
+  rb_node *p = parent(n);
+  assert(p != NULL);
+
+  if (!is_red(p))
     // black parent; don't need to fix
     return 1;
   else
@@ -347,7 +352,7 @@ static int rrot(rb_node *n) {
   assert(top != NULL);
   //assert(top_parent != NULL);
   assert(l != NULL);
-  assert(r != NULL);
+  //assert(r != NULL);
 
   rb_node *ll = get_left(l); // f
   rb_node *lr = get_right(l); // g
@@ -378,7 +383,7 @@ static int lrot(rb_node *n) {
   // these values cannot be NULL
   assert(top != NULL);
   //assert(top_parent != NULL);
-  assert(l != NULL);
+  //assert(l != NULL);
   assert(r != NULL);
 
   rb_node *rl = get_left(r);
@@ -406,6 +411,17 @@ static int insert_rb_node(rb_node *n, sexy_rb_tree *t) {
   return insert_base(inserting, t);
 }
 
+int insert_baby(my_type *data, sexy_rb_tree *t) {
+  rb_node *n = (rb_node *) malloc(sizeof(rb_node));
+  n->data = data;
+  n->node_type = BRANCH;
+  n->node_color = RED;
+  n->parent = NULL;
+  n->left = NULL;
+  n->right = NULL;
+
+  insert_rb_node(n, t);
+}
 
 /***************
  * TEST SCRIPT *
@@ -1074,7 +1090,30 @@ static void test_rots(void) {
   printf("lrot passed!\n");
 }
 
+static void test_insert(void) {
+  printf("beginning test_insert()\n");
+  
+  my_type *a = (my_type *) malloc(sizeof(my_type));
+  my_type *b = (my_type *) malloc(sizeof(my_type));
+  my_type *c = (my_type *) malloc(sizeof(my_type));
+
+  a->x = 1;
+  b->x = 2;
+  c->x = 3;
+
+  sexy_rb_tree *t = create_rb(&int_compare);
+
+  insert_baby(a, t);
+  insert_baby(b, t);
+  insert_baby(c, t);
+
+  free_rb(t);
+
+  printf("test_insert() passed!\n");
+}
+
 int main(void) {
   test_binary_insert();
   test_rots();
+  test_insert();
 }
