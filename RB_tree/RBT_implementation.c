@@ -362,7 +362,9 @@ static int rrot(rb_node *n) {
   l->right = n;
   n->parent = l;
   l->parent = top_parent;
-  lr->parent = n;
+  
+  if (lr != NULL)
+    lr->parent = n;
   
   if (top_parent != NULL) {
     if (top_parent->left == top)
@@ -394,7 +396,9 @@ static int lrot(rb_node *n) {
   r->left = n;
   n->parent = r;
   r->parent = top_parent;
-  rl->parent = n;
+
+  if (rl != NULL)
+    rl->parent = n;
   
   if (top_parent != NULL) {
     if (top_parent->left == top)
