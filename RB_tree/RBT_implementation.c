@@ -75,9 +75,16 @@ int is_red(rb_node *);
 static rb_node *grand_parent(rb_node *);
 static rb_node *uncle(rb_node *);
 static rb_node *parent(rb_node *);
+static rb_node *get_left(rb_node *);
+static rb_node *get_right(rb_node *);
 static void free_rb_nodes(rb_node *);
 
+// left and right rotate for trees
+static int lrot(rb_node *);
+static int rrot(rb_node *);
+
 static int set_color (rb_node *, int);
+
 
 // returns 1 on success
 static int insert_base(rb_node *, sexy_rb_tree *);
@@ -287,6 +294,44 @@ static int insert_both_red(rb_node *n, sexy_rb_tree *t) {
     return insert_base(g, t);
   } else {
     return insert_pred_ublack(n, t);
+  }
+}
+
+static rb_node *get_right(rb_node *n) {
+  return n->right;
+}
+
+static rb_node *get_left(rb_node *n) {
+  return n->left;
+}
+
+static int rrot(rb_node *n) {
+  rb_node *top = n; // c
+  rb_node *top_parent = parent(n); // a
+  rb_node *l = get_left(n); // d
+  rb_node *r = get_right(n); // e
+
+  // these values cannot be NULL
+  assert(top != NULL);
+  //assert(top_parent != NULL);
+  assert(l != NULL);
+  assert(r != NULL);
+
+  rb_node *ll = get_left(l); // f
+  rb_node *lr = get_right(l); // g
+
+  // do actual shifting
+  n->left = n->left->right;
+  l->right = n;
+  n->parent = l;
+  l->parent = top_parent;
+  lr->parent = n;
+  
+  if (top_parent != NULL) {
+    if (top_parent->left == top)
+      top_parent->left = l;
+    else
+      top_parent->right = l;
   }
 }
 
@@ -532,6 +577,239 @@ static void test_binary_insert(void) {
   printf("binary_insert_node() passed!\n");
 }
 
+static void test_rrot1(void) {
+  // instantiate and initialize data
+  my_type *a = malloc(sizeof(my_type));
+  my_type *b = malloc(sizeof(my_type));
+  my_type *c = malloc(sizeof(my_type));
+  my_type *d = malloc(sizeof(my_type));
+  my_type *e = malloc(sizeof(my_type));
+  my_type *f = malloc(sizeof(my_type));
+  my_type *g = malloc(sizeof(my_type));
+  my_type *h = malloc(sizeof(my_type));
+  my_type *i = malloc(sizeof(my_type));
+  my_type *j = malloc(sizeof(my_type));
+  my_type *k = malloc(sizeof(my_type));
+  my_type *l = malloc(sizeof(my_type));
+  my_type *m = malloc(sizeof(my_type));
+
+  a->x = 1;
+  b->x = 2;
+  c->x = 3;
+  d->x = 4;
+  e->x = 5;
+  f->x = 6;
+  g->x = 7;
+  h->x = 8;
+  i->x = 9;
+  j->x = 10;
+  k->x = 11;
+  l->x = 12;
+  m->x = 13;
+
+  rb_node *na = malloc(sizeof(rb_node));
+  rb_node *nb = malloc(sizeof(rb_node));
+  rb_node *nc = malloc(sizeof(rb_node));
+  rb_node *nd = malloc(sizeof(rb_node));
+  rb_node *ne = malloc(sizeof(rb_node));
+  rb_node *nf = malloc(sizeof(rb_node));
+  rb_node *ng = malloc(sizeof(rb_node));
+  rb_node *nh = malloc(sizeof(rb_node));
+  rb_node *ni = malloc(sizeof(rb_node));
+  rb_node *nj = malloc(sizeof(rb_node));
+  rb_node *nk = malloc(sizeof(rb_node));
+  rb_node *nl = malloc(sizeof(rb_node));
+  rb_node *nm = malloc(sizeof(rb_node));
+
+  na->data = a;
+  nb->data = b;
+  nc->data = c;
+  nd->data = d;
+  ne->data = e;
+  nf->data = f;
+  ng->data = g;
+  nh->data = h;
+  ni->data = i;
+  nj->data = j;
+  nk->data = k;
+  nl->data = l;
+  nm->data = m;
+
+
+  // set up initial tree
+  na->parent = NULL;
+  na->left = nb;
+  na->right = nc;
+
+  nb->parent = na;
+  nb->left = NULL;
+  nb->right = NULL;
+
+  nc->parent = na;
+  nc->left = nd;
+  nc->right = ne;
+
+  nd->parent = nc;
+  nd->left = nf;
+  nd->right = ng;
+
+  ne->parent = nc;
+  ne->left = nh;
+  ne->right = ni;
+
+  nf->parent = nd;
+  nf->left = nj;
+  nf->right = nk;
+
+  ng->parent = nd;
+  ng->left = nl;
+  ng->right = nm;
+
+  nh->parent = ne;
+  nh->left = NULL;
+  nh->right = NULL;
+
+  ni->parent = ne;
+  ni->left = NULL;
+  ni->right = NULL;
+
+  nj->parent = nf;
+  nj->left = NULL;
+  nj->right = NULL;
+
+  nk->parent = nf;
+  nk->left = NULL;
+  nk->right = NULL;
+
+  nl->parent = ng;
+  nl->left = NULL;
+  nl->right = NULL;
+
+  nm->parent = ng;
+  nm->left = NULL;
+  nm->right = NULL;
+
+  // rotate nc, which is right of root
+  rrot(nc);
+
+  // test structure
+  assert(na->parent == NULL);
+  assert(na->left == nb);
+  assert(na->right == nd);
+
+  assert(nb->parent == na);
+  assert(nb->left == NULL);
+  assert(nb->right == NULL);
+
+  assert(nc->parent == nd);
+  assert(nc->left == ng);
+  assert(nc->right == ne);
+
+  assert(nd->parent == na);
+  assert(nd->left == nf);
+  assert(nd->right == nc);
+
+  assert(ne->parent == nc);
+  assert(ne->left == nh);
+  assert(ne->right == ni);
+
+  assert(nf->parent == nd);
+  assert(nf->left == nj);
+  assert(nf->right == nk);
+
+  assert(ng->parent == nc);
+  assert(ng->left == nl);
+  assert(ng->right == nm);
+
+  assert(nh->parent == ne);
+  assert(nh->left == NULL);
+  assert(nh->right == NULL);
+
+  assert(ni->parent == ne);
+  assert(ni->left == NULL);
+  assert(ni->right == NULL);
+
+  assert(nj->parent == nf);
+  assert(nj->left == NULL);
+  assert(nj->right == NULL);
+
+  assert(nk->parent == nf);
+  assert(nk->left == NULL);
+  assert(nk->right == NULL);
+
+  assert(nl->parent == ng);
+  assert(nl->left == NULL);
+  assert(nl->right == NULL);
+
+  assert(nm->parent == ng);
+  assert(nm->left == NULL);
+  assert(nm->right == NULL);
+
+  // clean up
+  free(a);
+  free(b);
+  free(c);
+  free(d);
+  free(e);
+  free(f);
+  free(g);
+  free(h);
+  free(i);
+  free(j);
+  free(k);
+  free(l);
+  free(m);
+
+  free(na);
+  free(nb);
+  free(nc);
+  free(nd);
+  free(ne);
+  free(nf);
+  free(ng);
+  free(nh);
+  free(ni);
+  free(nj);
+  free(nk);
+  free(nl);
+  free(nm);
+
+  return;
+}
+
+// same as test_rrot1 but tree is on other side of parent
+static void test_rrot2(void) {
+  return;
+}
+
+static void test_rrot(void) {
+  test_rrot1();
+  test_rrot2();
+}
+
+static void test_lrot1(void) {
+  return;
+}
+
+static void test_lrot2(void) {
+  return;
+}
+
+static void test_lrot(void) {
+  test_lrot1();
+  test_lrot2();
+}
+
+static void test_rots(void) {
+  printf("beginning rrot() test\n");
+  test_rrot();
+  printf("rrot passed!\n");
+  printf("beginning lrot() test\n");
+  test_lrot();
+  printf("lrot passed!\n");
+}
+
 int main(void) {
   test_binary_insert();
+  test_rots();
 }
