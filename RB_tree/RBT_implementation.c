@@ -63,8 +63,8 @@ typedef struct sexy_rb_tree {
 // first 4 rely on the comparison function passed into create_rb()
 sexy_rb_tree *create_rb(int (*)(my_type *, my_type *));
 int insert_baby(my_type *, sexy_rb_tree *);
-int remove_baby(my_type *, sexy_rb_tree *);
-int search_baby(my_type *, sexy_rb_tree *);
+my_type *remove_baby(my_type *, sexy_rb_tree *);
+my_type *search_baby(my_type *, sexy_rb_tree *);
 void free_rb(sexy_rb_tree *);
 rb_node *get_root(sexy_rb_tree *);
 
@@ -440,6 +440,25 @@ int insert_baby(my_type *data, sexy_rb_tree *t) {
     t->num_nodes++;
 }
 
+my_type *search_baby(my_type *elem, sexy_rb_tree *t) {
+  int (*comp)(my_type *, my_type *) = t->comp;
+
+  assert(elem != NULL);
+
+  rb_node *cur = t->root;
+  
+  while (cur != NULL) {
+    if (comp(elem, cur->data) == LESS)
+      cur = cur->left;
+    else if (comp(elem, cur->data) == GREATER)
+      cur = cur->right;
+    else
+      return cur->data;
+  }
+  
+  return NULL;
+  
+}
 /***************
  * TEST SCRIPT *
  ***************/
@@ -1176,8 +1195,47 @@ static void test_insert(void) {
   printf("test_insert() passed!\n");
 }
 
+static void test_search(void) {
+  sexy_rb_tree *t = create_rb(&int_compare);
+
+  my_type *dat[2000];
+
+  for(int i = 0; i < 2000; i++) {
+    dat[i] = (my_type *) malloc(sizeof(my_type));
+  }
+
+  for(int i = 0; i < 1000; i++) {
+    dat[i]->x = i;
+  }
+
+  for(int i = 1000; i < 2000; i++) {
+    dat[i]->x = i;
+  }
+
+  for(int i = 0; i < 1000; i++) {
+    insert_baby(dat[i], t);
+  }
+
+  for(int i = 0; i < 1000; i++) {
+    assert(search_baby(dat[i], t) != NULL);
+  }
+  
+  for(int i = 1000; i < 2000; i++) {
+    assert(search_baby(dat[i], t) == NULL);
+  }
+
+  for(int i = 1000; i < 2000; i++) {
+    free(dat[i]);
+  }
+  
+  free_rb(t);
+}
+
+
+
 int main(void) {
   test_binary_insert();
   test_rots();
   test_insert();
+  test_search();
 }
