@@ -333,6 +333,40 @@ static int rrot(rb_node *n) {
     else
       top_parent->right = l;
   }
+
+  return 1;
+}
+
+static int lrot(rb_node *n) {
+  rb_node *top = n;
+  rb_node *top_parent = parent(n);
+  rb_node *l = get_left(n);
+  rb_node *r = get_right(n);
+
+  // these values cannot be NULL
+  assert(top != NULL);
+  //assert(top_parent != NULL);
+  assert(l != NULL);
+  assert(r != NULL);
+
+  rb_node *rl = get_left(r);
+  rb_node *rr = get_right(r);
+
+  // do actual shifting
+  n->right = rl;
+  r->left = n;
+  n->parent = r;
+  r->parent = top_parent;
+  rl->parent = n;
+  
+  if (top_parent != NULL) {
+    if (top_parent->left == top)
+      top_parent->left = r;
+    else
+      top_parent->right = r;
+  }
+
+  return 1;
 }
 
 static int insert_pred_ublack(rb_node *n, sexy_rb_tree *t) {
@@ -788,6 +822,202 @@ static void test_rrot(void) {
 }
 
 static void test_lrot1(void) {
+  // instantiate and initialize data
+  my_type *a = malloc(sizeof(my_type));
+  my_type *b = malloc(sizeof(my_type));
+  my_type *c = malloc(sizeof(my_type));
+  my_type *d = malloc(sizeof(my_type));
+  my_type *e = malloc(sizeof(my_type));
+  my_type *f = malloc(sizeof(my_type));
+  my_type *g = malloc(sizeof(my_type));
+  my_type *h = malloc(sizeof(my_type));
+  my_type *i = malloc(sizeof(my_type));
+  my_type *j = malloc(sizeof(my_type));
+  my_type *k = malloc(sizeof(my_type));
+  my_type *l = malloc(sizeof(my_type));
+  my_type *m = malloc(sizeof(my_type));
+
+  a->x = 1;
+  b->x = 2;
+  c->x = 3;
+  d->x = 4;
+  e->x = 5;
+  f->x = 6;
+  g->x = 7;
+  h->x = 8;
+  i->x = 9;
+  j->x = 10;
+  k->x = 11;
+  l->x = 12;
+  m->x = 13;
+
+  rb_node *na = malloc(sizeof(rb_node));
+  rb_node *nb = malloc(sizeof(rb_node));
+  rb_node *nc = malloc(sizeof(rb_node));
+  rb_node *nd = malloc(sizeof(rb_node));
+  rb_node *ne = malloc(sizeof(rb_node));
+  rb_node *nf = malloc(sizeof(rb_node));
+  rb_node *ng = malloc(sizeof(rb_node));
+  rb_node *nh = malloc(sizeof(rb_node));
+  rb_node *ni = malloc(sizeof(rb_node));
+  rb_node *nj = malloc(sizeof(rb_node));
+  rb_node *nk = malloc(sizeof(rb_node));
+  rb_node *nl = malloc(sizeof(rb_node));
+  rb_node *nm = malloc(sizeof(rb_node));
+
+  na->data = a;
+  nb->data = b;
+  nc->data = c;
+  nd->data = d;
+  ne->data = e;
+  nf->data = f;
+  ng->data = g;
+  nh->data = h;
+  ni->data = i;
+  nj->data = j;
+  nk->data = k;
+  nl->data = l;
+  nm->data = m;
+
+
+  // set up initial tree
+  na->parent = NULL;
+  na->left = nb;
+  na->right = nd;
+  
+  nb->parent = na;
+  nb->left = NULL;
+  nb->right = NULL;
+  
+  nc->parent = nd;
+  nc->left = ng;
+  nc->right = ne;
+  
+  nd->parent = na;
+  nd->left = nf;
+  nd->right = nc;
+  
+  ne->parent = nc;
+  ne->left = nh;
+  ne->right = ni;
+  
+  nf->parent = nd;
+  nf->left = nj;
+  nf->right = nk;
+  
+  ng->parent = nc;
+  ng->left = nl;
+  ng->right = nm;
+  
+  nh->parent = ne;
+  nh->left = NULL;
+  nh->right = NULL;
+  
+  ni->parent = ne;
+  ni->left = NULL;
+  ni->right = NULL;
+  
+  nj->parent = nf;
+  nj->left = NULL;
+  nj->right = NULL;
+  
+  nk->parent = nf;
+  nk->left = NULL;
+  nk->right = NULL;
+  
+  nl->parent = ng;
+  nl->left = NULL;
+  nl->right = NULL;
+  
+  nm->parent = ng;
+  nm->left = NULL;
+  nm->right = NULL;
+  
+  // rotate nd, which is right of root
+  lrot(nd);
+  
+  // test structure
+  assert(na->parent == NULL);
+  assert(na->left == nb);
+  assert(na->right == nc);
+  
+  assert(nb->parent == na);
+  assert(nb->left == NULL);
+  assert(nb->right == NULL);
+  
+  assert(nc->parent == na);
+  assert(nc->left == nd);
+  assert(nc->right == ne);
+  
+  assert(nd->parent == nc);
+  assert(nd->left == nf);
+  assert(nd->right == ng);
+  
+  assert(ne->parent == nc);
+  assert(ne->left == nh);
+  assert(ne->right == ni);
+  
+  assert(nf->parent == nd);
+  assert(nf->left == nj);
+  assert(nf->right == nk);
+  
+  assert(ng->parent == nd);
+  assert(ng->left == nl);
+  assert(ng->right == nm);
+  
+  assert(nh->parent == ne);
+  assert(nh->left == NULL);
+  assert(nh->right == NULL);
+  
+  assert(ni->parent == ne);
+  assert(ni->left == NULL);
+  assert(ni->right == NULL);
+  
+  assert(nj->parent == nf);
+  assert(nj->left == NULL);
+  assert(nj->right == NULL);
+  
+  assert(nk->parent == nf);
+  assert(nk->left == NULL);
+  assert(nk->right == NULL);
+  
+  assert(nl->parent == ng);
+  assert(nl->left == NULL);
+  assert(nl->right == NULL);
+  
+  assert(nm->parent == ng);
+  assert(nm->left == NULL);
+  assert(nm->right == NULL);
+  
+  // clean up
+  free(a);
+  free(b);
+  free(c);
+  free(d);
+  free(e);
+  free(f);
+  free(g);
+  free(h);
+  free(i);
+  free(j);
+  free(k);
+  free(l);
+  free(m);
+
+  free(na);
+  free(nb);
+  free(nc);
+  free(nd);
+  free(ne);
+  free(nf);
+  free(ng);
+  free(nh);
+  free(ni);
+  free(nj);
+  free(nk);
+  free(nl);
+  free(nm);
+
   return;
 }
 
