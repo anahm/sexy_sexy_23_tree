@@ -103,7 +103,7 @@ static int insert_pred_ublack_same(rb_node *, sexy_rb_tree *);
 // returns the node after insertion into the tree
 static rb_node *node_insert_node(rb_node *, rb_node *, int (*)(my_type *, my_type *));
 
-static rb_node *binary_insert_node(rb_node *, sexy_rb_tree *, int (*)(my_type *, my_type *));
+static rb_node *binary_insert_node(rb_node *, sexy_rb_tree *);
 
 /******************
  * IMPLEMENTATION *
@@ -232,8 +232,7 @@ static rb_node *node_insert_node(rb_node *inserting, rb_node *cur, int (*comp)(m
 
 }
 
-static rb_node *binary_insert_node(rb_node *n, sexy_rb_tree *t, int (*comp)(my_type *, my_type *)) {
-
+static rb_node *binary_insert_node(rb_node *n, sexy_rb_tree *t) {
   if (t->root == NULL) {
     n->node_color = BLACK;
     n->parent = NULL;
@@ -244,7 +243,7 @@ static rb_node *binary_insert_node(rb_node *n, sexy_rb_tree *t, int (*comp)(my_t
     return n;
   } else {
     n->node_color = RED;
-    node_insert_node(n, t->root, comp);
+    node_insert_node(n, t->root, t->comp);
   }
 
 }
@@ -417,7 +416,7 @@ static int lrot(rb_node *n, sexy_rb_tree *t) {
 }
 
 static int insert_rb_node(rb_node *n, sexy_rb_tree *t) {
-  rb_node *inserting = binary_insert_node(n, t, t->comp);
+  rb_node *inserting = binary_insert_node(n, t);
   return insert_base(inserting, t);
 }
 
@@ -479,9 +478,9 @@ static void test_1(void) {
   c->data = z;
 
   // assert basic inserts don't fail
-  assert(binary_insert_node(a, t, int_compare) != NULL);
-  assert(binary_insert_node(b, t, int_compare) != NULL);
-  assert(binary_insert_node(c, t, int_compare) != NULL);
+  assert(binary_insert_node(a, t) != NULL);
+  assert(binary_insert_node(b, t) != NULL);
+  assert(binary_insert_node(c, t) != NULL);
 
   // assert structure is as it should be
   assert(t->root == a);
@@ -517,9 +516,9 @@ static void test_2(void) {
   c->data = z;
 
   // assert basic inserts don't fail
-  assert(binary_insert_node(a, t, int_compare) != NULL);
-  assert(binary_insert_node(c, t, int_compare) != NULL);
-  assert(binary_insert_node(b, t, int_compare) != NULL);
+  assert(binary_insert_node(a, t) != NULL);
+  assert(binary_insert_node(c, t) != NULL);
+  assert(binary_insert_node(b, t) != NULL);
 
   // assert structure is as it should be
   assert(t->root == a);
@@ -553,9 +552,9 @@ static void test_3(void) {
   b->data = y;
   c->data = z;
 
-  assert(binary_insert_node(b, t, int_compare) != NULL);
-  assert(binary_insert_node(a, t, int_compare) != NULL);
-  assert(binary_insert_node(c, t, int_compare) != NULL);
+  assert(binary_insert_node(b, t) != NULL);
+  assert(binary_insert_node(a, t) != NULL);
+  assert(binary_insert_node(c, t) != NULL);
 
   assert(t->root == b);
   assert(t->root->left == a);
@@ -589,9 +588,9 @@ static void test_4(void) {
   b->data = y;
   c->data = z;
 
-  assert(binary_insert_node(b, t, int_compare) != NULL);
-  assert(binary_insert_node(c, t, int_compare) != NULL);
-  assert(binary_insert_node(a, t, int_compare) != NULL);
+  assert(binary_insert_node(b, t) != NULL);
+  assert(binary_insert_node(c, t) != NULL);
+  assert(binary_insert_node(a, t) != NULL);
 
   assert(t->root == b);
   assert(t->root->left == a);
@@ -626,9 +625,9 @@ static void test_5(void) {
   b->data = y;
   c->data = z;
 
-  assert(binary_insert_node(c, t, int_compare) != NULL);
-  assert(binary_insert_node(a, t, int_compare) != NULL);
-  assert(binary_insert_node(b, t, int_compare) != NULL);
+  assert(binary_insert_node(c, t) != NULL);
+  assert(binary_insert_node(a, t) != NULL);
+  assert(binary_insert_node(b, t) != NULL);
 
   assert(t->root == c);
   assert(t->root->left == a);
@@ -662,9 +661,9 @@ static void test_6(void) {
   b->data = y;
   c->data = z;
 
-  assert(binary_insert_node(c, t, int_compare) != NULL);
-  assert(binary_insert_node(b, t, int_compare) != NULL);
-  assert(binary_insert_node(a, t, int_compare) != NULL);
+  assert(binary_insert_node(c, t) != NULL);
+  assert(binary_insert_node(b, t) != NULL);
+  assert(binary_insert_node(a, t) != NULL);
 
   assert(t->root == c);
   assert(t->root->left == b);
