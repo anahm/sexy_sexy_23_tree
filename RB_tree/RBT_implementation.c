@@ -84,8 +84,8 @@ static rb_node *get_left(rb_node *);
 static rb_node *get_right(rb_node *);
 
 // left and right rotate for trees
-static int lrot(rb_node *);
-static int rrot(rb_node *);
+static int lrot(rb_node *, sexy_rb_tree *);
+static int rrot(rb_node *, sexy_rb_tree *);
 
 static int set_color (rb_node *, int);
 
@@ -309,12 +309,12 @@ static int insert_pred_ublack_opp(rb_node *n, sexy_rb_tree *t) {
 
   int res = 0;
   if (get_right(p) == n && p == get_left(g)) {
-    res = lrot(p);
+    res = lrot(p, t);
     if (res == 0)
       return 0;
     n = n->left;
   } else if (get_left(p) == n && p == get_right(g)) {
-    res = rrot(p);
+    res = rrot(p, t);
     n = n->right;
   }
 
@@ -334,15 +334,18 @@ static int insert_pred_ublack_same(rb_node *n, sexy_rb_tree *t) {
   int res = 0;
   // do the actual switch
   if (get_left(p) == n)
-    res = rrot(g);
+    res = rrot(g, t);
   else
-    res = lrot(g);
+    res = lrot(g, t);
 
   return res;
 }
 
 
-static int rrot(rb_node *n) {
+static int rrot(rb_node *n, sexy_rb_tree *t) {
+  int update_root = 0;
+  if (get_root(t) == n)
+    update_root = 1;
   rb_node *top = n; // c
   rb_node *top_parent = parent(n); // a
   rb_node *l = get_left(n); // d
@@ -373,10 +376,16 @@ static int rrot(rb_node *n) {
       top_parent->right = l;
   }
 
+  if (update_root)
+    t->root = l;
+
   return 1;
 }
 
-static int lrot(rb_node *n) {
+static int lrot(rb_node *n, sexy_rb_tree *t) {
+  int update_root = 0;
+  if (get_root(t) == n)
+    update_root = 1;
   rb_node *top = n;
   rb_node *top_parent = parent(n);
   rb_node *l = get_left(n);
@@ -406,6 +415,9 @@ static int lrot(rb_node *n) {
     else
       top_parent->right = r;
   }
+
+  if (update_root)
+    t->root = r;
 
   return 1;
 }
@@ -778,7 +790,12 @@ static void test_rrot1(void) {
   nm->right = NULL;
 
   // rotate nc, which is right of root
-  rrot(nc);
+  sexy_rb_tree *t = (sexy_rb_tree *) malloc(sizeof(sexy_rb_tree));
+  t->root = NULL;
+
+  rrot(nc, t);
+
+  free(t);
 
   // test structure
   assert(na->parent == NULL);
@@ -989,8 +1006,13 @@ static void test_lrot1(void) {
   nm->right = NULL;
   
   // rotate nd, which is right of root
-  lrot(nd);
+  sexy_rb_tree *t = (sexy_rb_tree *) malloc(sizeof(sexy_rb_tree));
+  t->root = NULL;
+
+  lrot(nd, t);
   
+  free(t);
+
   // test structure
   assert(na->parent == NULL);
   assert(na->left == nb);
