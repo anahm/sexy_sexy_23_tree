@@ -2,3 +2,8 @@ NOTES TO DEVELOPERS USING RBT_implementation:
 
 > currently only supports insert, remove, and search
   > need to update so that supports in-order traversal and the like
+
+> currently doesn't allow duplicate keys
+
+> currently handles fixes slightly recursively
+  > should be fairly straightforward to make more iterative by cutting and pasting code from different cases

@@ -66,6 +66,7 @@ int insert_baby(my_type *, sexy_rb_tree *);
 int remove_baby(my_type *, sexy_rb_tree *);
 int search_baby(my_type *, sexy_rb_tree *);
 void free_rb(sexy_rb_tree *);
+rb_node *get_root(sexy_rb_tree *);
 
 // returns 1 if red, 0 if black
 int is_red(rb_node *);
@@ -73,10 +74,20 @@ int is_red(rb_node *);
 // helper functions: DO NOT EXPOSE
 static rb_node *grand_parent(rb_node *);
 static rb_node *uncle(rb_node *);
+static rb_node *parent(rb_node *);
 static void free_rb_nodes(rb_node *);
 
+static int set_color (rb_node *, int);
+
 // returns 1 on success
-static int insert_root(rb_node *, sexy_rb_tree *);
+static int insert_base(rb_node *, sexy_rb_tree *);
+static int insert_black_parent(rb_node *, sexy_rb_tree *);
+
+// both parent and uncle are red
+static int insert_both_red(rb_node *, sexy_rb_tree *);
+
+// parent red, uncle black
+static int insert_pred_ublack(rb_node *, sexy_rb_tree *);
 
 // insert node without fixing tree
 // returns the node after insertion into the tree
@@ -87,6 +98,14 @@ static rb_node *binary_insert_node(rb_node *, sexy_rb_tree *, int (*)(my_type *,
 /******************
  * IMPLEMENTATION *
  ******************/
+
+rb_node *get_root(sexy_rb_tree *t) {
+  return t->root;
+}
+
+static rb_node *parent(rb_node *n) {
+  return n->parent;
+} 
 
 sexy_rb_tree *create_rb(int (*comp)(my_type *, my_type *)) {
   sexy_rb_tree *ret = (sexy_rb_tree *) malloc(sizeof(sexy_rb_tree));
@@ -110,6 +129,11 @@ static void free_rb_nodes(rb_node *n) {
 void free_rb(sexy_rb_tree *t) {
   free_rb_nodes(t->root);
   free(t);
+}
+
+static int set_color (rb_node *n, int color) {
+  assert(color == RED || color == BLACK);
+  n->node_color = color;
 }
 
 int is_red(rb_node *n) {
@@ -228,8 +252,46 @@ static rb_node *binary_insert_node(rb_node *n, sexy_rb_tree *t, int (*comp)(my_t
 }
 
 // returns 1 on success
-int insert_root(rb_node *n, sexy_rb_tree *t) {
-  
+static int insert_base(rb_node *n, sexy_rb_tree *t) {
+  if (n == get_root(t)) {
+    // inserted root; don't need to fix
+    set_color(n, BLACK);
+    assert(n->parent == NULL);
+    return 1;
+  } else {
+    // check next case
+    return insert_black_parent(n, t);
+  }
+}
+
+static int insert_black_parent(rb_node *n, sexy_rb_tree *t) {
+  if (!is_red(parent(n)))
+    // black parent; don't need to fix
+    return 1;
+  else
+    return insert_both_red(n, t);
+}
+
+static int insert_both_red(rb_node *n, sexy_rb_tree *t) {
+  rb_node *u = uncle(n);
+  if (u != NULL && is_red(u)) {
+    set_color(parent(n), BLACK);
+    set_color(u, BLACK);
+    // grand parent should exist because parent
+    // was originally red and root can't be red
+    rb_node *g = grand_parent(n);
+    set_color(g, RED);
+
+    // recursively call on grandparent
+    // in case we just made the root red
+    return insert_base(g, t);
+  } else {
+    return insert_pred_ublack(n, t);
+  }
+}
+
+static int insert_pred_ublack(rb_node *n, sexy_rb_tree *t) {
+  return 1;
 }
 
 /***************
@@ -238,7 +300,7 @@ int insert_root(rb_node *n, sexy_rb_tree *t) {
 
 // BREAKS ABSTRACTION BARRIER
 // primarily tests binary_insert_node
-void test_1(void) {
+static void test_1(void) {
   // a, b, c ordering
   sexy_rb_tree *t = create_rb(&int_compare);
   
@@ -276,7 +338,7 @@ void test_1(void) {
 
 }
 
-void test_2(void) {
+static void test_2(void) {
   // a, c, b ordering
   sexy_rb_tree *t = create_rb(&int_compare);
   
@@ -313,7 +375,7 @@ void test_2(void) {
   free_rb(t);
 }
 
-void test_3(void) {
+static void test_3(void) {
   // b, a, c ordering
   sexy_rb_tree *t = create_rb(&int_compare);
   
@@ -349,7 +411,7 @@ void test_3(void) {
 
 }
 
-void test_4(void) {
+static void test_4(void) {
   // b, c, a ordering
   sexy_rb_tree *t = create_rb(&int_compare);
   
@@ -386,7 +448,7 @@ void test_4(void) {
 }
 
 
-void test_5(void) {
+static void test_5(void) {
   // c, a, b ordering
   sexy_rb_tree *t = create_rb(&int_compare);
   
@@ -422,7 +484,7 @@ void test_5(void) {
 
 }
 
-void test_6(void) {
+static void test_6(void) {
   // c, b, a ordering
   sexy_rb_tree *t = create_rb(&int_compare);
   
@@ -459,7 +521,7 @@ void test_6(void) {
 }
 
 
-void test_binary_insert(void) {
+static void test_binary_insert(void) {
   printf("beginning test of binary_insert_node()\n");
   test_1();
   test_2();
