@@ -11,8 +11,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define LEAF 11
-#define BRANCH 12
 #define RED 13
 #define BLACK 14
 #define LESS -1
@@ -44,7 +42,6 @@ int int_compare(my_type *a, my_type *b) {
  *************/
 typedef struct rb_node {
   my_type *data;
-  int node_type;
   int node_color;
   struct rb_node *parent;
   struct rb_node *left;
@@ -201,7 +198,6 @@ static rb_node *node_insert_node(rb_node *inserting, rb_node *cur, int (*comp)(m
       inserting->left = NULL;
       inserting->right = NULL;
       inserting->parent = cur;
-      inserting->node_type = BRANCH;
       cur->left = inserting;
       return inserting;
     } else {
@@ -221,7 +217,6 @@ static rb_node *node_insert_node(rb_node *inserting, rb_node *cur, int (*comp)(m
       inserting->left = NULL;
       inserting->right = NULL;
       inserting->parent = cur;
-      inserting->node_type = BRANCH;
       cur->right = inserting;
       return inserting;
     } else {
@@ -240,7 +235,6 @@ static rb_node *node_insert_node(rb_node *inserting, rb_node *cur, int (*comp)(m
 static rb_node *binary_insert_node(rb_node *n, sexy_rb_tree *t, int (*comp)(my_type *, my_type *)) {
 
   if (t->root == NULL) {
-    n->node_type = BRANCH;
     n->node_color = BLACK;
     n->parent = NULL;
     n->left = NULL;
@@ -430,7 +424,6 @@ static int insert_rb_node(rb_node *n, sexy_rb_tree *t) {
 int insert_baby(my_type *data, sexy_rb_tree *t) {
   rb_node *n = (rb_node *) malloc(sizeof(rb_node));
   n->data = data;
-  n->node_type = BRANCH;
   n->node_color = RED;
   n->parent = NULL;
   n->left = NULL;
@@ -1196,39 +1189,46 @@ static void test_insert(void) {
 }
 
 static void test_search(void) {
+  // number of nodes going into tree for testing
+  int n = 100000;
+
+  printf("beginning test_search with %d elements\n", n);
+
   sexy_rb_tree *t = create_rb(&int_compare);
 
-  my_type *dat[2000];
+  my_type *dat[2*n];
 
-  for(int i = 0; i < 2000; i++) {
+  for(int i = 0; i < 2*n; i++) {
     dat[i] = (my_type *) malloc(sizeof(my_type));
   }
 
-  for(int i = 0; i < 1000; i++) {
+  for(int i = 0; i < n; i++) {
     dat[i]->x = i;
   }
 
-  for(int i = 1000; i < 2000; i++) {
+  for(int i = n; i < 2*n; i++) {
     dat[i]->x = i;
   }
 
-  for(int i = 0; i < 1000; i++) {
+  for(int i = 0; i < n; i++) {
     insert_baby(dat[i], t);
   }
 
-  for(int i = 0; i < 1000; i++) {
+  for(int i = 0; i < n; i++) {
     assert(search_baby(dat[i], t) != NULL);
   }
   
-  for(int i = 1000; i < 2000; i++) {
+  for(int i = n; i < 2*n; i++) {
     assert(search_baby(dat[i], t) == NULL);
   }
 
-  for(int i = 1000; i < 2000; i++) {
+  for(int i = n; i < 2*n; i++) {
     free(dat[i]);
   }
   
   free_rb(t);
+
+  printf("test_search passed!\n");
 }
 
 
