@@ -436,7 +436,8 @@ int insert_baby(my_type *data, sexy_rb_tree *t) {
   n->left = NULL;
   n->right = NULL;
 
-  insert_rb_node(n, t);
+  if (insert_rb_node(n, t))
+    t->num_nodes++;
 }
 
 /***************
@@ -1116,8 +1117,7 @@ static void test_rots(void) {
   printf("lrot passed!\n");
 }
 
-static void test_insert(void) {
-  printf("beginning test_insert()\n");
+static void test_insert_1(void) {
   
   my_type *a = (my_type *) malloc(sizeof(my_type));
   my_type *b = (my_type *) malloc(sizeof(my_type));
@@ -1134,6 +1134,44 @@ static void test_insert(void) {
   insert_baby(c, t);
 
   free_rb(t);
+
+
+}
+
+static void test_insert_2(void) {
+  my_type *d9 = (my_type *) malloc(sizeof(my_type));
+  my_type *d8 = (my_type *) malloc(sizeof(my_type));
+  my_type *d7 = (my_type *) malloc(sizeof(my_type));
+  my_type *d3 = (my_type *) malloc(sizeof(my_type));
+  my_type *d5 = (my_type *) malloc(sizeof(my_type));
+  my_type *d2 = (my_type *) malloc(sizeof(my_type));
+  
+
+  d9->x = 9;
+  d8->x = 8;
+  d7->x = 7;
+  d3->x = 3;
+  d5->x = 5;
+  d2->x = 2;
+  
+  sexy_rb_tree *t = create_rb(&int_compare);
+
+  insert_baby(d9, t);
+  insert_baby(d8, t);
+  insert_baby(d7, t);
+  insert_baby(d3, t);
+  insert_baby(d5, t);
+  insert_baby(d2, t);
+
+  free_rb(t);
+  
+}
+
+static void test_insert(void) {
+  printf("beginning test_insert()\n");
+
+  test_insert_1();
+  test_insert_2();
 
   printf("test_insert() passed!\n");
 }
