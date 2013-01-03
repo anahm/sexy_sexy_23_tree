@@ -11,11 +11,11 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define RED 13
-#define BLACK 14
-#define LESS -1
-#define EQUAL 0
-#define GREATER 1
+#define RED 50
+#define BLACK 51
+#define LESS 61
+#define EQUAL 121
+#define GREATER 161
 
 /****************
  * USER-DEFINED *
@@ -104,6 +104,10 @@ static int insert_pred_ublack_same(rb_node *, sexy_rb_tree *);
 static rb_node *node_insert_node(rb_node *, rb_node *, int (*)(my_type *, my_type *));
 
 static rb_node *binary_insert_node(rb_node *, sexy_rb_tree *);
+
+// update data with predecessor
+// returns predecessor on success, NULL on failure
+static rb_node *replace_with_pred(rb_node *);
 
 /******************
  * IMPLEMENTATION *
@@ -451,6 +455,26 @@ my_type *search_baby(my_type *elem, sexy_rb_tree *t) {
   return NULL;
   
 }
+
+static rb_node *replace_with_pred(rb_node *n) {
+  rb_node *l = get_left(n);
+
+  if (l == NULL) {
+    // no left child, so can't replace with predecessor
+    return NULL;
+  } else {
+    // iterate down the tree to the predecessor
+    while (get_right(l) != NULL)
+      l = get_right(l);
+
+    assert(l->data != NULL);
+    n->data = l->data;
+
+    return l;
+  }
+  
+}
+
 /***************
  * TEST SCRIPT *
  ***************/
@@ -1230,11 +1254,91 @@ static void test_search(void) {
   printf("test_search passed!\n");
 }
 
+static void replace_w_pred_test(void) {
+  // initialize data for nodes
+  my_type *a = (my_type *) malloc(sizeof(my_type));
+  my_type *b = (my_type *) malloc(sizeof(my_type));
+  my_type *c = (my_type *) malloc(sizeof(my_type));
+  my_type *d = (my_type *) malloc(sizeof(my_type));
+  my_type *e = (my_type *) malloc(sizeof(my_type));
 
+  a->x = 1;
+  b->x = 2;
+  c->x = 3;
+  d->x = 4;
+  e->x = 5;
+
+  // initialize nodes
+  rb_node *na = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *nb = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *nc = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *nd = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *ne = (rb_node *) malloc(sizeof(rb_node));
+  
+  // set up structure
+  na->left = nb;
+  na->right = nc;
+  na->parent = NULL;
+  
+  nb->left = nd;
+  nb->right = ne;
+  nb->parent = na;
+
+  nc->left = NULL;
+  nc->right = NULL;
+  nc->parent = na;
+
+  nd->left = NULL;
+  nd->right = NULL;
+  nd->parent = nb;
+
+  ne->left = NULL;
+  ne->right = NULL;
+  ne->parent = nb;
+  
+  // test that "fails" in desired circumstances
+  assert(replace_with_pred(nc) == NULL);
+  assert(replace_with_pred(nd) == NULL);
+  assert(replace_with_pred(ne) == NULL);
+
+  // test general case
+  assert(replace_with_pred(na) != NULL);
+  assert(na->data == ne->data);
+
+  // test "minimum working case"
+  assert(replace_with_pred(nb) != NULL);
+  assert(nb->data == nd->data);
+
+  // clean up
+  free(a);
+  free(b);
+  free(c);
+  free(d);
+  free(e);
+
+  free(na);
+  free(nb);
+  free(nc);
+  free(nd);
+  free(ne);
+
+}
+
+static void replace_w_succ_test(void) {
+  return;
+}
+
+static void replace_test(void) {
+  printf("testing basic data replacement\n");
+  replace_w_pred_test();
+  replace_w_succ_test();
+  printf("replacement passed!\n");
+}
 
 int main(void) {
   test_binary_insert();
   test_rots();
   test_insert();
   test_search();
+  replace_test();
 }
