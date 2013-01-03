@@ -109,6 +109,10 @@ static rb_node *binary_insert_node(rb_node *, sexy_rb_tree *);
 // returns predecessor on success, NULL on failure
 static rb_node *replace_with_pred(rb_node *);
 
+// update data with successor
+// returns successor on success, NULL on failure
+static rb_node *replace_with_succ(rb_node *);
+
 /******************
  * IMPLEMENTATION *
  ******************/
@@ -473,6 +477,25 @@ static rb_node *replace_with_pred(rb_node *n) {
     return l;
   }
   
+}
+
+
+static rb_node *replace_with_succ(rb_node *n) {
+  rb_node *r = get_right(n);
+
+  if (r == NULL) {
+    return NULL;
+  } else {
+
+    while (get_left(r) != NULL)
+      r = get_left(r);
+
+    assert(r->data != NULL);
+    n->data = r->data;
+
+    return r;
+  }
+
 }
 
 /***************
@@ -1144,12 +1167,10 @@ static void test_lrot(void) {
 }
 
 static void test_rots(void) {
-  printf("beginning rrot() test\n");
+  printf("beginning rot() test\n");
   test_rrot();
-  printf("rrot passed!\n");
-  printf("beginning lrot() test\n");
   test_lrot();
-  printf("lrot passed!\n");
+  printf("rot() passed!\n");
 }
 
 static void test_insert_1(void) {
@@ -1324,8 +1345,76 @@ static void replace_w_pred_test(void) {
 
 }
 
+
+// very similar to replace_w_pred_test()
 static void replace_w_succ_test(void) {
-  return;
+  // initialize data for nodes
+  my_type *a = (my_type *) malloc(sizeof(my_type));
+  my_type *b = (my_type *) malloc(sizeof(my_type));
+  my_type *c = (my_type *) malloc(sizeof(my_type));
+  my_type *d = (my_type *) malloc(sizeof(my_type));
+  my_type *e = (my_type *) malloc(sizeof(my_type));
+
+  a->x = 1;
+  b->x = 2;
+  c->x = 3;
+  d->x = 4;
+  e->x = 5;
+
+  // initialize nodes
+  rb_node *na = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *nb = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *nc = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *nd = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *ne = (rb_node *) malloc(sizeof(rb_node));
+  
+  // set up structure
+  na->left = nb;
+  na->right = nc;
+  na->parent = NULL;
+  
+  nb->left = NULL;
+  nb->right = NULL;
+  nb->parent = na;
+
+  nc->left = nd;
+  nc->right = ne;
+  nc->parent = na;
+
+  nd->left = NULL;
+  nd->right = NULL;
+  nd->parent = nc;
+
+  ne->left = NULL;
+  ne->right = NULL;
+  ne->parent = nc;
+  
+  // test that "fails" in desired circumstances
+  assert(replace_with_succ(nb) == NULL);
+  assert(replace_with_succ(nd) == NULL);
+  assert(replace_with_succ(ne) == NULL);
+
+  // test general case
+  assert(replace_with_succ(na) != NULL);
+  assert(na->data == nd->data);
+
+  // test "minimum working case"
+  assert(replace_with_succ(nc) != NULL);
+  assert(nc->data == ne->data);
+
+  // clean up
+  free(a);
+  free(b);
+  free(c);
+  free(d);
+  free(e);
+
+  free(na);
+  free(nb);
+  free(nc);
+  free(nd);
+  free(ne);
+
 }
 
 static void replace_test(void) {
@@ -1335,10 +1424,20 @@ static void replace_test(void) {
   printf("replacement passed!\n");
 }
 
-int main(void) {
+static void test_all(void) {
+  printf("\n");
   test_binary_insert();
+  printf("\n");
   test_rots();
+  printf("\n");
   test_insert();
+  printf("\n");
   test_search();
+  printf("\n");
   replace_test();
+  printf("\n");
+}
+
+int main(void) {
+  test_all();
 }
