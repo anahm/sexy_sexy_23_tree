@@ -66,7 +66,7 @@ void free_rb(sexy_rb_tree *);
 rb_node *get_root(sexy_rb_tree *);
 
 // returns 1 if red, 0 if black
-int is_red(rb_node *);
+static int is_red(rb_node *);
 
 // helper functions: DO NOT EXPOSE
 static void free_rb_nodes(rb_node *);
@@ -154,7 +154,7 @@ static int set_color (rb_node *n, int color) {
   n->node_color = color;
 }
 
-int is_red(rb_node *n) {
+static int is_red(rb_node *n) {
   if (n->node_color == RED)
     return 1;
   else if (n->node_color == BLACK)
