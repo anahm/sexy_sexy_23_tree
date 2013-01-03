@@ -15,7 +15,9 @@
 #define BLACK 51
 #define LESS 61
 #define EQUAL 121
-#define GREATER 161
+#define GREATER 124
+#define PRED 153
+#define SUCC 161
 
 /****************
  * USER-DEFINED *
@@ -42,7 +44,10 @@ int int_compare(my_type *a, my_type *b) {
  *************/
 typedef struct rb_node {
   my_type *data;
+
+  // either RED or BLACK
   int node_color;
+
   struct rb_node *parent;
   struct rb_node *left;
   struct rb_node *right;
@@ -51,6 +56,11 @@ typedef struct rb_node {
 typedef struct sexy_rb_tree {
   rb_node *root;
   int num_nodes;
+
+  // keeps track of whether replacement
+  // (subroutine of remove_baby) should try to use
+  // successor or predecessor; can be either PRED or SUPP
+  int sorp;
 
   // returns LESS iff "a < b", EQUAL iff "a == b", GREATER iff "a > b"
   int (*comp)(my_type *, my_type *);
@@ -109,9 +119,18 @@ static rb_node *binary_insert_node(rb_node *, sexy_rb_tree *);
 // returns predecessor on success, NULL on failure
 static rb_node *replace_with_pred(rb_node *);
 
-// update data with successor
+// updates data with successor
 // returns successor on success, NULL on failure
 static rb_node *replace_with_succ(rb_node *);
+
+// updates data with either predecessor or successor;
+// tries to keep tree relatively balanced by taking sorp into
+// account; sorp MUST be the sorp of the tree from which
+// n comes; otherwise, NASAL DEMONS MAN, NASAL DEMONS!
+// returns predecessor or successor (whichever was used)
+// on success, NULL on failure; should only fail when 
+// both n->left and n->right are NULL
+static rb_node *simple_replace(rb_node *n, int sorp);
 
 /******************
  * IMPLEMENTATION *
@@ -133,6 +152,9 @@ sexy_rb_tree *create_rb(int (*comp)(my_type *, my_type *)) {
   ret->root = NULL;
   ret->num_nodes = 0;
   ret->comp = comp;
+  ret->sorp = SUCC;
+  
+  return ret;
 }
 
 static void free_rb_nodes(rb_node *n) {
@@ -495,6 +517,31 @@ static rb_node *replace_with_succ(rb_node *n) {
 
     return r;
   }
+
+}
+
+static rb_node *simple_replace(rb_node *n, int sorp) {
+  rb_node *res = NULL;
+
+  if (sorp == SUCC) {
+    res = replace_with_succ(n);
+
+    if (res == NULL)
+      res = replace_with_pred(n);
+    
+  } else if (sorp == PRED) {
+    
+    res = replace_with_pred(n);
+    
+    if (res == NULL)
+      res = replace_with_succ(n);
+
+  } else {
+    // something wrong with constants
+    assert(0);
+  }
+
+  return res;
 
 }
 
@@ -1295,6 +1342,12 @@ static void replace_w_pred_test(void) {
   rb_node *nc = (rb_node *) malloc(sizeof(rb_node));
   rb_node *nd = (rb_node *) malloc(sizeof(rb_node));
   rb_node *ne = (rb_node *) malloc(sizeof(rb_node));
+
+  na->data = a;
+  nb->data = b;
+  nc->data = c;
+  nd->data = d;
+  ne->data = e;
   
   // set up structure
   na->left = nb;
@@ -1367,6 +1420,12 @@ static void replace_w_succ_test(void) {
   rb_node *nc = (rb_node *) malloc(sizeof(rb_node));
   rb_node *nd = (rb_node *) malloc(sizeof(rb_node));
   rb_node *ne = (rb_node *) malloc(sizeof(rb_node));
+
+  na->data = a;
+  nb->data = b;
+  nc->data = c;
+  nd->data = d;
+  ne->data = e;
   
   // set up structure
   na->left = nb;
