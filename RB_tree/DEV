@@ -1,5 +1,7 @@
 NOTES TO DEVELOPERS USING RBT_implementation:
 
+> MAKE SURE CHANGE SUCC AND PRED WHEN DELETING!!
+
 > currently one copy of the file can only produce one "type" of tree; i.e. a "my_type" can only be one type
   > need to change what is stored/returned to void * when entirely sure tree is working correctly so can support different types without copying entire file and changing "my_type"
 
