@@ -652,20 +652,18 @@ static int path_black_nodes(rb_node *n) {
     path_max = INT_MIN;
     path_min = INT_MAX;
     
-    path_black_nodes(n->left);
+    if (!path_black_nodes(n->left))
+      return 0;
 
-    path_max = INT_MIN;
-    path_min = INT_MAX;
   }
   
   if (n->right != NULL) {
     path_max = INT_MIN;
     path_min = INT_MAX;
     
-    path_black_nodes(n->right);
+    if (!path_black_nodes(n->right))
+      return 0;
 
-    path_max = INT_MIN;
-    path_min = INT_MAX;
   }
 
   path_max = INT_MIN;
@@ -1410,7 +1408,7 @@ static void test_insert(void) {
 
 static void test_search(void) {
   // number of nodes going into tree for testing
-  int n = 100;
+  int n = 100000;
 
   printf("beginning test_search with %d elements\n", n);
 
