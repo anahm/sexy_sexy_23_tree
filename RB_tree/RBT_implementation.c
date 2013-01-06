@@ -75,6 +75,14 @@ my_type *search_baby(my_type *, sexy_rb_tree *);
 void free_rb(sexy_rb_tree *);
 rb_node *get_root(sexy_rb_tree *);
 
+// primarily for testing purposes
+// DOES NOT TEST BST INVARIANTS!
+// returns 1 for "yes," 0 for "no"
+int is_valid_rb_tree(sexy_rb_tree *);
+
+static int red_parent_black_children(rb_node *);
+static int path_black_nodes(rb_node *);
+
 // returns 1 if red, 0 if black
 static int is_red(rb_node *);
 
@@ -126,7 +134,7 @@ static rb_node *replace_with_succ(rb_node *);
 // updates data with either predecessor or successor;
 // tries to keep tree relatively balanced by taking sorp into
 // account; sorp MUST be the sorp of the tree from which
-// n comes; otherwise, NASAL DEMONS MAN, NASAL DEMONS!
+// n comes; otherwise, NASAL DAEMONS MAN, NASAL DAEMONS!
 // returns predecessor or successor (whichever was used)
 // on success, NULL on failure; should only fail when 
 // both n->left and n->right are NULL
@@ -177,10 +185,10 @@ static int set_color (rb_node *n, int color) {
 }
 
 static int is_red(rb_node *n) {
-  if (n->node_color == RED)
-    return 1;
-  else if (n->node_color == BLACK)
+  if ((n == NULL) || (n->node_color == BLACK))
     return 0;
+  else if (n->node_color == RED)
+    return 1;
   else
     assert(0);
 }
@@ -543,6 +551,70 @@ static rb_node *simple_replace(rb_node *n, int sorp) {
 
   return res;
 
+}
+
+int is_valid_rb_tree(sexy_rb_tree *t) {
+  if (t == NULL)
+    return 0;
+
+  rb_node *r = get_root(t);
+
+  if (r == NULL)
+    return 0;
+
+  // root should be black
+  if (is_red(r))
+    return 0;
+
+  // both children of red parent must be black (or NULL)
+  if (!red_parent_black_children(r))
+    return 0;
+
+  // every simple path from node to descendant
+  // has same number of black nodes
+  if (!path_black_nodes(r))
+    return 0;
+
+  return 1;
+}
+
+static int one_red_parent_black_children(rb_node *n) {
+  rb_node *l = get_left(n);
+  rb_node *r = get_right(n);
+  
+  if (is_red(n)) {
+    if (is_red(l) || is_red(r))
+      return 0;
+  }
+
+  //return (red_parent_black_children(l) && red_parent_black_children(r));
+
+  return 1;
+
+}
+
+static int red_parent_black_children(rb_node *n) {
+  if (!one_red_parent_black_children(n))
+    return 0;
+  
+  if (n->left != NULL) {
+    if (!red_parent_black_children(n->left))
+      return 0;
+  }
+
+  if (n->right != NULL) {
+    if (!red_parent_black_children(n->right))
+      return 0;
+  }
+  
+  return 1;
+
+}
+
+
+
+static int path_black_nodes(rb_node *n) {
+  return 1;
 }
 
 /***************
@@ -1281,7 +1353,7 @@ static void test_insert(void) {
 
 static void test_search(void) {
   // number of nodes going into tree for testing
-  int n = 100000;
+  int n = 100;
 
   printf("beginning test_search with %d elements\n", n);
 
@@ -1316,6 +1388,8 @@ static void test_search(void) {
   for(int i = n; i < 2*n; i++) {
     free(dat[i]);
   }
+
+  assert(is_valid_rb_tree(t));
   
   free_rb(t);
 
@@ -1476,10 +1550,102 @@ static void replace_w_succ_test(void) {
 
 }
 
+static void simple_replace_test(void) {
+  // initialize data for nodes
+  my_type *a = (my_type *) malloc(sizeof(my_type));
+  my_type *b = (my_type *) malloc(sizeof(my_type));
+  my_type *c = (my_type *) malloc(sizeof(my_type));
+  my_type *d = (my_type *) malloc(sizeof(my_type));
+  my_type *e = (my_type *) malloc(sizeof(my_type));
+
+  a->x = 1;
+  b->x = 2;
+  c->x = 3;
+  d->x = 4;
+  e->x = 5;
+
+  // initialize nodes
+  rb_node *na = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *nb = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *nc = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *nd = (rb_node *) malloc(sizeof(rb_node));
+  rb_node *ne = (rb_node *) malloc(sizeof(rb_node));
+
+  na->data = a;
+  nb->data = b;
+  nc->data = c;
+  nd->data = d;
+  ne->data = e;
+  
+  // set up structure
+  na->left = nb;
+  na->right = nc;
+  na->parent = NULL;
+  
+  nb->left = nd;
+  nb->right = ne;
+  nb->parent = na;
+
+  nc->left = NULL;
+  nc->right = NULL;
+  nc->parent = na;
+
+  nd->left = NULL;
+  nd->right = NULL;
+  nd->parent = nb;
+
+  ne->left = NULL;
+  ne->right = NULL;
+  ne->parent = nb;
+  
+  // test "fails" when should
+  assert(simple_replace(nc, SUCC) == NULL);
+  assert(simple_replace(nc, PRED) == NULL);
+
+  assert(simple_replace(nd, SUCC) == NULL);
+  assert(simple_replace(nd, PRED) == NULL);
+
+  assert(simple_replace(ne, SUCC) == NULL);
+  assert(simple_replace(ne, PRED) == NULL);
+
+  assert(nc->data == c);
+  assert(nd->data == d);
+  assert(ne->data == e);
+
+  // test "minimal working case"
+  assert(simple_replace(nb, SUCC) == ne);
+  assert(nb->data == e);
+
+  assert(simple_replace(nb, PRED) == nd);
+  assert(nb->data == d);
+
+  // test general case
+  assert(simple_replace(na, PRED) == ne);
+  assert(na->data == e);
+  
+  assert(simple_replace(na, SUCC) == nc);
+  assert(na->data == c);
+
+  // clean up
+  free(a);
+  free(b);
+  free(c);
+  free(d);
+  free(e);
+
+  free(na);
+  free(nb);
+  free(nc);
+  free(nd);
+  free(ne);
+
+}
+
 static void replace_test(void) {
   printf("testing basic data replacement\n");
   replace_w_pred_test();
   replace_w_succ_test();
+  simple_replace_test();
   printf("replacement passed!\n");
 }
 
