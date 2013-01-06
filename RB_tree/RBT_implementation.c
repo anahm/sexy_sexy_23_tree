@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <limits.h>
 
 #define RED 50
 #define BLACK 51
@@ -611,9 +612,65 @@ static int red_parent_black_children(rb_node *n) {
 
 }
 
+static int path_max = INT_MIN;
+static int path_min = INT_MAX;
 
+static void path_black_nodes_helper(rb_node *n, int count) {
+  if (n == NULL) {
+    count++;
+    
+    if (count > path_max)
+      path_max = count;
+
+    if (count < path_min)
+      path_min = count;
+
+    return;
+
+  } else {
+
+  if (!is_red(n))
+    count++;
+
+  path_black_nodes_helper(n->left, count);
+  path_black_nodes_helper(n->right, count);
+
+  }
+
+}
 
 static int path_black_nodes(rb_node *n) {
+  path_max = INT_MIN;
+  path_min = INT_MAX;
+
+  path_black_nodes_helper(n, 0);
+  
+  if (path_max != path_min)
+    return 0;
+
+  if (n->left != NULL) {
+    path_max = INT_MIN;
+    path_min = INT_MAX;
+    
+    path_black_nodes(n->left);
+
+    path_max = INT_MIN;
+    path_min = INT_MAX;
+  }
+  
+  if (n->right != NULL) {
+    path_max = INT_MIN;
+    path_min = INT_MAX;
+    
+    path_black_nodes(n->right);
+
+    path_max = INT_MIN;
+    path_min = INT_MAX;
+  }
+
+  path_max = INT_MIN;
+  path_min = INT_MAX;
+  
   return 1;
 }
 
