@@ -554,31 +554,6 @@ static rb_node *simple_replace(rb_node *n, int sorp) {
 
 }
 
-int is_valid_rb_tree(sexy_rb_tree *t) {
-  if (t == NULL)
-    return 0;
-
-  rb_node *r = get_root(t);
-
-  if (r == NULL)
-    return 0;
-
-  // root should be black
-  if (is_red(r))
-    return 0;
-
-  // both children of red parent must be black (or NULL)
-  if (!red_parent_black_children(r))
-    return 0;
-
-  // every simple path from node to descendant
-  // has same number of black nodes
-  if (!path_black_nodes(r))
-    return 0;
-
-  return 1;
-}
-
 static int one_red_parent_black_children(rb_node *n) {
   rb_node *l = get_left(n);
   rb_node *r = get_right(n);
@@ -669,6 +644,112 @@ static int path_black_nodes(rb_node *n) {
   path_max = INT_MIN;
   path_min = INT_MAX;
   
+  return 1;
+}
+
+static int tree_lt(rb_node *n, my_type *value, int (*comp)(my_type *, my_type *)) {
+  assert(n != NULL);
+  assert(value != NULL);
+  assert(n->data != NULL);
+  assert(value != NULL);
+
+  if (comp(n->data, value) != LESS)
+    return 0;
+  
+  if (n->left != NULL)
+    tree_lt(n->left, value, comp);
+
+  if (n->right != NULL)
+    tree_lt(n->right, value, comp);
+
+  return 1;
+}
+
+static int tree_gt(rb_node *n, my_type *value, int (*comp)(my_type *, my_type *)) {
+  assert(n != NULL);
+  assert(value != NULL);
+  assert(n->data != NULL);
+  assert(value != NULL);
+
+  if (comp(n->data, value) != GREATER)
+    return 0;
+  
+  if (n->left != NULL) {
+    if (!tree_gt(n->left, value, comp))
+      return 0;
+  }
+
+  if (n->right != NULL) {
+    if (!tree_gt(n->right, value, comp))
+      return 0;
+  }
+
+  return 1;
+}
+
+static int bin_tree_helper(rb_node *n, int (*comp)(my_type *, my_type *)) {
+  assert(n != NULL);
+  
+  if (n->right != NULL) {
+    if (!tree_gt(n->right, n->data, comp))
+      return 0;
+  }
+  
+  if (n->left != NULL) {
+    if (!tree_lt(n->left, n->data, comp))
+      return 0;
+  }
+  
+  return 1;
+}
+
+static int bin_tree(rb_node *n, int (*comp)(my_type *, my_type *)) {
+  assert(n != NULL);
+  
+  if (!bin_tree_helper(n, comp))
+    return 0;
+
+  if (n->left != NULL) {
+    if (!bin_tree(n->left, comp))
+      return 0;
+  }
+
+  if (n->right != NULL) {
+    if (!bin_tree(n->right, comp))
+      return 0;
+  }
+
+  return 1;
+
+}
+
+
+int is_valid_rb_tree(sexy_rb_tree *t) {
+  if (t == NULL)
+    return 0;
+
+  rb_node *r = get_root(t);
+
+  if (r == NULL)
+    return 0;
+
+  // root should be black
+  if (is_red(r))
+    return 0;
+
+  // both children of red parent must be black (or NULL)
+  if (!red_parent_black_children(r))
+    return 0;
+
+  // every simple path from node to descendant
+  // has same number of black nodes
+  if (!path_black_nodes(r))
+    return 0;
+
+  // should be a valid binary tree
+  if (!bin_tree(r, t->comp))
+    return 0;
+
   return 1;
 }
 
