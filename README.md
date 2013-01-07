@@ -1,7 +1,7 @@
 sexy_sexy_23_tree
 =================
 
-ohai - this is ali
+ohai - this is Neilix
 
 trying to practice writing different tree structures (for the lulz)
 
